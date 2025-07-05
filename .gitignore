@@ -22,3 +22,26 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+*.log
+*.pyc
+*.cache
+node_modules/
+# Build output
+dist/
+build/
+coverage/
+# Dependency directories
+jspm_packages/
+# TypeScript cache
+*.tsbuildinfo
+# Compiled JavaScript files
+*.js
+*.jsx
+# Compiled TypeScript files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# Next.js build output
+
