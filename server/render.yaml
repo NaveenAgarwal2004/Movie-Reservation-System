@@ -16,4 +16,4 @@ services:
       - key: JWT_REFRESH_SECRET
         generateValue: true
       - key: CLIENT_URL
-        value: https://your-frontend-url.vercel.app
+        value: movie-reservation-system-nine.vercel.app
