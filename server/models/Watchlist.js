@@ -6,9 +6,8 @@ const watchlistSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
-  movie: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Movie',
+  movieTmdbId: {
+    type: String,
     required: true,
   },
   addedAt: {
@@ -26,6 +25,6 @@ const watchlistSchema = new mongoose.Schema({
 });
 
 // Compound index
-watchlistSchema.index({ user: 1, movie: 1 }, { unique: true });
+watchlistSchema.index({ user: 1, movieTmdbId: 1 }, { unique: true });
 
 module.exports = mongoose.model('Watchlist', watchlistSchema);

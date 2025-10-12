@@ -8,9 +8,7 @@ const router = express.Router();
 // Get user's watchlist
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    const watchlist = await Watchlist.find({ user: req.user.userId })
-      .populate('movie')
-      .sort({ addedAt: -1 });
+    const watchlist = await Watchlist.find({ user: req.user.userId }).sort({ addedAt: -1 });
 
     res.json(watchlist);
   } catch (error) {
@@ -24,28 +22,21 @@ router.post('/:movieId', authMiddleware, async (req, res) => {
   try {
     const { movieId } = req.params;
 
-    const movie = await Movie.findById(movieId);
-    if (!movie) {
-      return res.status(404).json({ message: 'Movie not found' });
-    }
-
-    const exists = await Watchlist.findOne({ user: req.user.userId, movie: movieId });
+    const exists = await Watchlist.findOne({ user: req.user.userId, movieTmdbId: movieId });
     if (exists) {
       return res.status(400).json({ message: 'Movie already in watchlist' });
     }
 
     const watchlistItem = new Watchlist({
       user: req.user.userId,
-      movie: movieId,
+      movieTmdbId: movieId,
     });
 
     await watchlistItem.save();
 
-    const populatedItem = await Watchlist.findById(watchlistItem._id).populate('movie');
-
     res.status(201).json({
       message: 'Added to watchlist',
-      item: populatedItem,
+      item: watchlistItem,
     });
   } catch (error) {
     console.error('Add to watchlist error:', error);
@@ -60,7 +51,7 @@ router.delete('/:movieId', authMiddleware, async (req, res) => {
 
     const result = await Watchlist.findOneAndDelete({
       user: req.user.userId,
-      movie: movieId,
+      movieTmdbId: movieId,
     });
 
     if (!result) {
@@ -109,7 +100,7 @@ router.get('/check/:movieId', authMiddleware, async (req, res) => {
 
     const exists = await Watchlist.findOne({
       user: req.user.userId,
-      movie: movieId,
+      movieTmdbId: movieId,
     });
 
     res.json({ inWatchlist: !!exists });
