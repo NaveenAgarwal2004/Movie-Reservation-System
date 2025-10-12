@@ -3,11 +3,11 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Install dependencies
-COPY server/package*.json ./
+COPY package*.json ./
 RUN npm install --production
 
 # Copy source code
-COPY server/ .
+COPY . .
 
 # Create uploads directory
 RUN mkdir -p uploads
