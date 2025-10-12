@@ -98,15 +98,18 @@ const bookingSchema = new mongoose.Schema({
   }
 });
 
+// Efficient indexes
+bookingSchema.index({ user: 1, createdAt: -1 });
+bookingSchema.index({ bookingReference: 1 }, { unique: true });
+bookingSchema.index({ showtime: 1, status: 1 });
+bookingSchema.index({ status: 1, createdAt: -1 });
+bookingSchema.index({ 'seats.row': 1, 'seats.number': 1, showtime: 1 });
+bookingSchema.index({ createdAt: -1 });
+
 // Update updatedAt before saving
 bookingSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
-
-// Index for efficient queries
-bookingSchema.index({ user: 1, createdAt: -1 });
-bookingSchema.index({ bookingReference: 1 });
-bookingSchema.index({ showtime: 1 });
 
 module.exports = mongoose.model('Booking', bookingSchema);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom'; // Add useLocation here
 import { 
   CreditCardIcon, 
   LockClosedIcon, 
@@ -14,6 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 const Checkout = () => {
   const { bookingId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation(); // Now properly imported
   const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('card');

@@ -3,12 +3,13 @@ const Movie = require('../models/Movie');
 const Showtime = require('../models/Showtime');
 const Theater = require('../models/Theater');
 const authMiddleware = require('../middleware/auth');
+const { cacheMiddleware } = require('../middleware/caching');
 const { body, validationResult } = require('express-validator');
 
 const router = express.Router();
 
-// Get all movies with pagination and filters
-router.get('/', async (req, res) => {
+// Get all movies with caching (5 minutes)
+router.get('/', cacheMiddleware(300), async (req, res) => {
   try {
     const {
       page = 1,
@@ -22,7 +23,6 @@ router.get('/', async (req, res) => {
       featured
     } = req.query;
 
-    // Build filter object
     const filter = { isActive: true };
     
     if (search) {
@@ -45,16 +45,17 @@ router.get('/', async (req, res) => {
       filter.isFeatured = true;
     }
 
-    // Build sort object
     const sort = {};
     sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
 
     const skip = (page - 1) * limit;
 
     const movies = await Movie.find(filter)
+      .select('-__v') // Exclude version key
       .sort(sort)
       .skip(skip)
-      .limit(parseInt(limit));
+      .limit(parseInt(limit))
+      .lean(); // Use lean() for better performance
 
     const total = await Movie.countDocuments(filter);
 
@@ -70,6 +71,22 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Get movies error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get featured movies with caching (10 minutes)
+router.get('/featured/list', cacheMiddleware(600), async (req, res) => {
+  try {
+    const movies = await Movie.find({ isFeatured: true, isActive: true })
+      .select('-__v')
+      .sort({ createdAt: -1 })
+      .limit(6)
+      .lean();
+
+    res.json(movies);
+  } catch (error) {
+    console.error('Get featured movies error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

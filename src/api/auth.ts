@@ -36,6 +36,7 @@ export interface User {
 export interface AuthResponse {
   message: string;
   token: string;
+  refreshToken?: string;
   user: User;
 }
 
@@ -60,10 +61,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
+    // Remove automatic redirect on 401 - let the context handle token refresh
     return Promise.reject(error);
   }
 );
@@ -91,6 +89,11 @@ export const authAPI = {
 
   changePassword: async (passwordData: { currentPassword: string; newPassword: string }): Promise<{ message: string }> => {
     const response = await api.put('/api/auth/change-password', passwordData);
+    return response.data;
+  },
+
+  refreshToken: async (refreshToken: string): Promise<{ token: string }> => {
+    const response = await api.post('/api/auth/refresh-token', { refreshToken });
     return response.data;
   },
 };

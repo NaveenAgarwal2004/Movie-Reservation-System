@@ -1,4 +1,5 @@
 const express = require('express');
+const { sendEmail } = require('../services/emailService');
 const Booking = require('../models/Booking');
 const Showtime = require('../models/Showtime');
 const Movie = require('../models/Movie');
@@ -207,7 +208,15 @@ router.post('/:id/confirm', authMiddleware, async (req, res) => {
       _id: req.params.id,
       user: req.user.userId,
       status: 'pending'
-    });
+    })
+      .populate('user', 'email firstName')
+      .populate({
+        path: 'showtime',
+        populate: [
+          { path: 'movie', select: 'title' },
+          { path: 'theater', select: 'name location' }
+        ]
+      });
 
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
@@ -224,16 +233,14 @@ router.post('/:id/confirm', authMiddleware, async (req, res) => {
     await booking.save();
 
     // Move seats from reserved to booked
-    const showtime = await Showtime.findById(booking.showtime);
+    const showtime = await Showtime.findById(booking.showtime._id);
     
-    // Remove from reserved seats
     showtime.reservedSeats = showtime.reservedSeats.filter(seat => 
       !booking.seats.some(bookingSeat => 
         seat.row === bookingSeat.row && seat.number === bookingSeat.number
       )
     );
 
-    // Add to booked seats
     booking.seats.forEach(seat => {
       showtime.bookedSeats.push({
         row: seat.row,
@@ -243,10 +250,24 @@ router.post('/:id/confirm', authMiddleware, async (req, res) => {
       });
     });
 
-    // Update available seats count
     showtime.availableSeats -= booking.seats.length;
-
     await showtime.save();
+
+    // Send confirmation email
+    if (booking.user?.email) {
+      await sendEmail(booking.user.email, 'bookingConfirmation', {
+        user: booking.user,
+        movie: booking.showtime.movie,
+        theater: booking.showtime.theater,
+        showtime: {
+          date: booking.showtime.date,
+          time: booking.showtime.time
+        },
+        seats: booking.seats,
+        totalAmount: booking.totalAmount,
+        bookingReference: booking.bookingReference
+      });
+    }
 
     res.json({
       message: 'Booking confirmed successfully',

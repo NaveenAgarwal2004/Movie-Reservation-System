@@ -85,13 +85,19 @@ const movieSchema = new mongoose.Schema({
   }
 });
 
+// Compound indexes for common queries
+movieSchema.index({ title: 'text', description: 'text', genre: 'text' });
+movieSchema.index({ isActive: 1, isFeatured: 1 });
+movieSchema.index({ releaseDate: -1, isActive: 1 });
+movieSchema.index({ genre: 1, isActive: 1 });
+movieSchema.index({ rating: 1, isActive: 1 });
+movieSchema.index({ imdbRating: -1 });
+movieSchema.index({ createdAt: -1 });
+
 // Update updatedAt before saving
 movieSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
-
-// Index for search
-movieSchema.index({ title: 'text', description: 'text', genre: 'text' });
 
 module.exports = mongoose.model('Movie', movieSchema);

@@ -11,7 +11,7 @@ const socketHandler = (io) => {
         return next(new Error('Authentication error'));
       }
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
       const user = await User.findById(decoded.userId);
       
       if (!user || !user.isActive) {
