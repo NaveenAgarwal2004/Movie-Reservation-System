@@ -35,8 +35,6 @@ jspm_packages/
 # TypeScript cache
 *.tsbuildinfo
 # Compiled JavaScript files
-*.js
-*.jsx
 # Compiled TypeScript files
 .env
 .env.local
