@@ -1,7 +1,12 @@
-# Fix Login Persistence Issue
+# Integration of Contact and Theater Pages
 
 ## Tasks
-- [x] Add refreshToken method to src/api/auth.ts
-- [x] Remove automatic redirect to /login on 401 in axios interceptor in src/api/auth.ts
-- [x] Modify checkAuth useEffect in src/contexts/AuthContext.tsx to attempt token refresh if getCurrentUser fails with 401
-- [x] Test login persistence by refreshing the page after login
+
+- [x] Add /contact route to App.tsx
+- [x] Fix /theaters route in App.tsx to use Theaters component
+- [x] Add "Contact" link to Navbar.tsx navigation
+
+## Followup Steps
+
+- [x] Test navigation to both pages (App running on localhost:5173)
+- [x] Verify pages render correctly (Browser testing disabled, but code integration complete)

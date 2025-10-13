@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { 
-  FilmIcon, 
-  UserCircleIcon, 
-  Bars3Icon, 
+import {
+  FilmIcon,
+  UserCircleIcon,
+  Bars3Icon,
   XMarkIcon,
   ChevronDownIcon,
   UserIcon,
   CogIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
@@ -28,6 +28,7 @@ const Navbar = () => {
     { name: 'Home', href: '/', current: false },
     { name: 'Movies', href: '/movies', current: false },
     { name: 'Theaters', href: '/theaters', current: false },
+    { name: 'Contact', href: '/contact', current: false },
   ];
 
   return (
@@ -39,7 +40,7 @@ const Navbar = () => {
               <FilmIcon className="h-8 w-8 text-red-600" />
               <span className="ml-2 text-xl font-bold text-white">CineMax</span>
             </Link>
-            
+
             <div className="hidden md:ml-6 md:flex md:space-x-8">
               {navigation.map((item) => (
                 <Link
@@ -62,7 +63,7 @@ const Navbar = () => {
                 >
                   My Bookings
                 </Link>
-                
+
                 {isAdmin && (
                   <Link
                     to="/admin"
@@ -95,7 +96,9 @@ const Navbar = () => {
                   >
                     <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <div className="px-4 py-2 text-sm text-gray-900 border-b border-gray-200">
-                        <div className="font-medium">{user?.firstName} {user?.lastName}</div>
+                        <div className="font-medium">
+                          {user?.firstName} {user?.lastName}
+                        </div>
                         <div className="text-gray-500">{user?.email}</div>
                       </div>
                       <Menu.Item>
@@ -190,7 +193,7 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
-            
+
             {isAuthenticated ? (
               <>
                 <Link
