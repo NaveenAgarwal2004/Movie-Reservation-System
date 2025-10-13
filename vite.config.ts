@@ -9,7 +9,12 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/*.png', 'vite.svg'],
+      includeAssets: [
+        'icons/icon-*.png',
+        'icons/bookings-shortcut.png',
+        'icons/movies-shortcut.png',
+        'vite.svg',
+      ],
       manifest: {
         name: 'CineMax - Movie Booking',
         short_name: 'CineMax',
@@ -73,6 +78,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json,woff,woff2}'],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB
+        globIgnores: ['icons/home.png'], // Exclude the large home.png file
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/api\.themoviedb\.org\/.*/i,
