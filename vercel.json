@@ -17,6 +17,26 @@
       }
     },
     {
+      "src": "/sw.js",
+      "headers": {
+        "Cache-Control": "public, max-age=0, must-revalidate",
+        "Content-Type": "application/javascript"
+      }
+    },
+    {
+      "src": "/registerSW.js",
+      "headers": {
+        "Cache-Control": "public, max-age=0, must-revalidate",
+        "Content-Type": "application/javascript"
+      }
+    },
+    {
+      "src": "/manifest.webmanifest",
+      "headers": {
+        "Content-Type": "application/manifest+json"
+      }
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
