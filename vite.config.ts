@@ -125,6 +125,10 @@ export default defineConfig({
             },
           },
         ],
+        // Disable precaching of workbox files to avoid importScripts issues
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
       },
       devOptions: {
         enabled: false, // Disable SW in development
