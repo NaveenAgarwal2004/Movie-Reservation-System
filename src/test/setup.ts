@@ -25,8 +25,11 @@ Object.defineProperty(window, 'matchMedia', {
   }),
 });
 
+// Mock global object for ESLint
+(globalThis as any).global = globalThis;
+
 // Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
+(globalThis as any).IntersectionObserver = class IntersectionObserver {
   constructor() {}
   disconnect() {}
   observe() {}
@@ -50,10 +53,13 @@ Object.defineProperty(window, 'localStorage', {
 });
 
 // Mock console methods to avoid noise in tests
-global.console = {
+(globalThis as any).console = {
   ...console,
   // Keep error and warn for debugging
   log: () => {},
   info: () => {},
   debug: () => {},
 };
+
+// Mock global object for ESLint
+(globalThis as any).global = globalThis;
