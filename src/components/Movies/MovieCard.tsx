@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { StarIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { ClockIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
 
@@ -55,15 +55,13 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, index = 0, showDetails = t
           </Link>
         </div>
       </div>
-      
+
       {showDetails && (
         <div className="p-6">
           <h3 className="text-lg font-bold text-white mb-2 group-hover:text-red-400 transition-colors">
             {movie.title}
           </h3>
-          {movie.genre && (
-            <p className="text-gray-400 text-sm mb-2">{movie.genre.join(', ')}</p>
-          )}
+          {movie.genre && <p className="text-gray-400 text-sm mb-2">{movie.genre.join(', ')}</p>}
           {movie.duration && movie.year && (
             <div className="flex items-center text-gray-400 text-sm mb-3">
               <ClockIcon className="h-4 w-4 mr-1" />
@@ -71,9 +69,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, index = 0, showDetails = t
             </div>
           )}
           {movie.description && (
-            <p className="text-gray-300 text-sm mb-4 line-clamp-2">
-              {movie.description}
-            </p>
+            <p className="text-gray-300 text-sm mb-4 line-clamp-2">{movie.description}</p>
           )}
           <Link
             to={`/movies/${movie.id}`}

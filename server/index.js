@@ -1,5 +1,3 @@
-// server/index.js - Fixed with proper CORS configuration
-
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -29,13 +27,12 @@ const errorHandler = require('./middleware/errorHandler');
 const { sanitizeBody } = require('./middleware/inputValidator');
 
 // SERVICES
-const redisClient = require('./services/redis');
 const socketHandler = require('./services/socketHandler');
 
 const app = express();
 const server = http.createServer(app);
 
-// CORS Configuration - CRITICAL FIX
+// CORS Configuration
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
   : [
@@ -46,13 +43,10 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
-
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      console.log('Blocked by CORS:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -60,13 +54,10 @@ const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  maxAge: 86400, // 24 hours
+  maxAge: 86400,
 };
 
-// Apply CORS before other middleware
 app.use(cors(corsOptions));
-
-// Handle preflight requests
 app.options('*', cors(corsOptions));
 
 // Socket.IO with CORS
@@ -81,85 +72,73 @@ const io = socketIo(server, {
 // Security middleware
 app.use(
   helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", 'data:', 'https:', 'http:'],
-        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-        connectSrc: ["'self'", ...allowedOrigins],
-      },
-    },
+    contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
     crossOriginResourcePolicy: { policy: 'cross-origin' },
   })
 );
 
-// Compression middleware
-app.use(
-  compression({
-    filter: (req, res) => {
-      if (req.headers['x-no-compression']) {
-        return false;
-      }
-      return compression.filter(req, res);
-    },
-    level: 6,
-  })
-);
-
+app.use(compression());
 app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Sanitize all request bodies
 app.use(sanitizeBody);
 
-// RATE LIMITER
+// Rate limiter
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
   message: 'Too many requests, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => {
-    // Skip rate limiting for health check
-    return req.path === '/api/health';
-  },
+  skip: (req) => req.path === '/api/health',
 });
 app.use('/api/', limiter);
 
-// DATABASE CONNECTION
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/cinemax';
+// DATABASE CONNECTION (with test mode support)
+const connectDB = async () => {
+  const MONGODB_URI =
+    process.env.NODE_ENV === 'test'
+      ? 'mongodb://localhost:27017/movie-reservation-test'
+      : process.env.MONGODB_URI || 'mongodb://localhost:27017/cinemax';
 
-mongoose
-  .connect(MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-  })
-  .then(() => {
+  try {
+    await mongoose.connect(MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
     console.log('✅ Connected to MongoDB');
     console.log('📊 Database:', mongoose.connection.name);
-  })
-  .catch((err) => {
+  } catch (err) {
     console.error('❌ MongoDB connection error:', err.message);
-    // Don't exit in production, allow retry
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
       process.exit(1);
     }
-  });
+  }
+};
+
+connectDB();
 
 mongoose.connection.on('error', (err) => {
   console.error('MongoDB runtime error:', err);
 });
 
 mongoose.connection.on('disconnected', () => {
-  console.warn('⚠️ MongoDB disconnected. Attempting to reconnect...');
+  console.warn('⚠️ MongoDB disconnected');
 });
+
+// Initialize Redis only in non-test environments
+if (process.env.NODE_ENV !== 'test') {
+  try {
+    const redisClient = require('./services/redis');
+    console.log('✅ Redis initialized');
+  } catch (error) {
+    console.warn('⚠️ Redis not available, using in-memory fallback');
+  }
+}
 
 // ROUTES
 app.use('/api/auth', authRoutes);
@@ -171,7 +150,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/watchlist', authMiddleware, watchlistRoutes);
 app.use('/api/loyalty', authMiddleware, loyaltyRoutes);
 
-// ROOT ROUTE - API Info
+// ROOT ROUTE
 app.get('/', (req, res) => {
   res.json({
     name: 'CineMax API',
@@ -182,13 +161,7 @@ app.get('/', (req, res) => {
       auth: '/api/auth/*',
       movies: '/api/movies/*',
       bookings: '/api/bookings/*',
-      users: '/api/users/*',
-      admin: '/api/admin/*',
-      reviews: '/api/reviews/*',
-      watchlist: '/api/watchlist/*',
-      loyalty: '/api/loyalty/*',
     },
-    documentation: '/api/docs',
   });
 });
 
@@ -200,27 +173,21 @@ app.get('/api/health', (req, res) => {
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || 'development',
     mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
-    memory: {
-      used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + ' MB',
-      total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + ' MB',
-    },
   };
-
   res.status(200).json(healthcheck);
 });
 
 // Socket.io handler
 socketHandler(io);
 
-// ERROR HANDLER MIDDLEWARE (must be last)
+// ERROR HANDLER
 app.use(errorHandler);
 
-// 404 NOT FOUND HANDLER
+// 404 NOT FOUND
 app.use('*', (req, res) => {
   res.status(404).json({
     error: 'Not Found',
     message: `Route ${req.originalUrl} not found`,
-    availableRoutes: ['/api/health', '/api/auth/*', '/api/movies/*', '/api/bookings/*'],
   });
 });
 
@@ -238,8 +205,10 @@ process.on('SIGTERM', () => {
 
 const PORT = process.env.PORT || 5000;
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`
+// Only start server if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`
 ╔════════════════════════════════════════╗
 ║      🎬 CineMax API Server 🎬         ║
 ╠════════════════════════════════════════╣
@@ -248,21 +217,8 @@ server.listen(PORT, '0.0.0.0', () => {
 ║  Environment: ${process.env.NODE_ENV || 'development'}        ║
 ║  CORS: ${allowedOrigins.length} origins allowed       ║
 ╚════════════════════════════════════════╝
-  `);
-  console.log('🌐 Allowed Origins:', allowedOrigins.join(', '));
-});
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-  // In production, log to monitoring service
-  if (process.env.NODE_ENV === 'production') {
-    // Log to Sentry or similar
-  }
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
+    `);
+  });
+}
 
 module.exports = { app, server, io };

@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
-import { CloudArrowUpIcon, XMarkIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
-import { motion, AnimatePresence } from 'framer-motion';
+import {
+  CloudArrowUpIcon,
+  XMarkIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+} from '@heroicons/react/24/outline';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Papa from 'papaparse';
 
@@ -23,7 +28,10 @@ interface UploadResult {
   errors: string[];
 }
 
-const BulkMovieUpload: React.FC<{ onClose: () => void; onSuccess: () => void }> = ({ onClose, onSuccess }) => {
+const BulkMovieUpload: React.FC<{ onClose: () => void; onSuccess: () => void }> = ({
+  onClose,
+  onSuccess,
+}) => {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -42,7 +50,7 @@ const BulkMovieUpload: React.FC<{ onClose: () => void; onSuccess: () => void }> 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile && droppedFile.type === 'text/csv') {
       setFile(droppedFile);
@@ -70,7 +78,7 @@ const BulkMovieUpload: React.FC<{ onClose: () => void; onSuccess: () => void }> 
       },
       error: (error) => {
         toast.error('Error parsing CSV: ' + error.message);
-      }
+      },
     });
   };
 
@@ -78,7 +86,7 @@ const BulkMovieUpload: React.FC<{ onClose: () => void; onSuccess: () => void }> 
     if (!file) return;
 
     setIsUploading(true);
-    
+
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -93,7 +101,7 @@ const BulkMovieUpload: React.FC<{ onClose: () => void; onSuccess: () => void }> 
             // Transform genre string to array
             const movieData = {
               ...movie,
-              genre: movie.genre.split(',').map(g => g.trim()),
+              genre: movie.genre.split(',').map((g) => g.trim()),
               duration: parseInt(movie.duration.toString()),
             };
 
@@ -101,9 +109,9 @@ const BulkMovieUpload: React.FC<{ onClose: () => void; onSuccess: () => void }> 
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
               },
-              body: JSON.stringify(movieData)
+              body: JSON.stringify(movieData),
             });
 
             if (response.ok) {
@@ -113,15 +121,15 @@ const BulkMovieUpload: React.FC<{ onClose: () => void; onSuccess: () => void }> 
               const errorData = await response.json();
               errors.push(`${movie.title}: ${errorData.message}`);
             }
-          } catch (error: any) {
+          } catch (error) {
             failed++;
-            errors.push(`${movie.title}: ${error.message}`);
+            errors.push(`${movie.title}: ${(error as Error).message}`);
           }
         }
 
         setUploadResult({ success, failed, errors });
         setIsUploading(false);
-        
+
         if (success > 0) {
           toast.success(`Successfully uploaded ${success} movies!`);
           onSuccess();
@@ -130,7 +138,7 @@ const BulkMovieUpload: React.FC<{ onClose: () => void; onSuccess: () => void }> 
       error: (error) => {
         toast.error('Error parsing CSV: ' + error.message);
         setIsUploading(false);
-      }
+      },
     });
   };
 
@@ -138,7 +146,7 @@ const BulkMovieUpload: React.FC<{ onClose: () => void; onSuccess: () => void }> 
     const template = `title,description,genre,duration,rating,releaseDate,poster,director,language,country
 The Dark Knight,Batman faces the Joker,"Action,Crime,Drama",152,PG-13,2008-07-18,https://example.com/poster.jpg,Christopher Nolan,English,USA
 Inception,A thief enters dreams,"Action,Sci-Fi,Thriller",148,PG-13,2010-07-16,https://example.com/poster2.jpg,Christopher Nolan,English,USA`;
-    
+
     const blob = new Blob([template], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -160,10 +168,7 @@ Inception,A thief enters dreams,"Action,Sci-Fi,Thriller",148,PG-13,2010-07-16,ht
       >
         <div className="p-6 border-b border-gray-700 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-white">Bulk Movie Upload</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
             <XMarkIcon className="h-6 w-6" />
           </button>
         </div>
@@ -206,21 +211,14 @@ Inception,A thief enters dreams,"Action,Sci-Fi,Thriller",148,PG-13,2010-07-16,ht
                 <p className="text-gray-400 text-sm mb-4">or</p>
                 <label className="inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg cursor-pointer transition-colors">
                   Browse Files
-                  <input
-                    type="file"
-                    accept=".csv"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
+                  <input type="file" accept=".csv" onChange={handleFileChange} className="hidden" />
                 </label>
               </div>
 
               {/* Preview */}
               {preview.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-4">
-                    Preview (First 5 rows)
-                  </h3>
+                  <h3 className="text-lg font-semibold text-white mb-4">Preview (First 5 rows)</h3>
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-700">
                       <thead>
@@ -247,7 +245,9 @@ Inception,A thief enters dreams,"Action,Sci-Fi,Thriller",148,PG-13,2010-07-16,ht
                           <tr key={index}>
                             <td className="px-4 py-2 text-sm text-white">{movie.title}</td>
                             <td className="px-4 py-2 text-sm text-gray-400">{movie.genre}</td>
-                            <td className="px-4 py-2 text-sm text-gray-400">{movie.duration} min</td>
+                            <td className="px-4 py-2 text-sm text-gray-400">
+                              {movie.duration} min
+                            </td>
                             <td className="px-4 py-2 text-sm text-gray-400">{movie.rating}</td>
                             <td className="px-4 py-2 text-sm text-gray-400">{movie.director}</td>
                           </tr>

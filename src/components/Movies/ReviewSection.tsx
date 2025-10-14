@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StarIcon, HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/react/24/outline';
+import { HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
@@ -33,21 +33,21 @@ interface ReviewSectionProps {
 }
 
 const ReviewSection: React.FC<ReviewSectionProps> = ({ movieId, reviews, stats, onRefresh }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [sortBy, setSortBy] = useState('helpful');
   const [showSpoilers, setShowSpoilers] = useState(false);
-  
+
   const [reviewForm, setReviewForm] = useState({
     rating: 5,
     title: '',
     content: '',
-    isSpoiler: false
+    isSpoiler: false,
   });
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!isAuthenticated) {
       toast.error('Please login to write a review');
       return;
@@ -58,12 +58,12 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ movieId, reviews, stats, 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
           movieId,
-          ...reviewForm
-        })
+          ...reviewForm,
+        }),
       });
 
       if (response.ok) {
@@ -75,7 +75,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ movieId, reviews, stats, 
         const data = await response.json();
         toast.error(data.message || 'Failed to submit review');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to submit review');
     }
   };
@@ -90,14 +90,14 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ movieId, reviews, stats, 
       const response = await fetch(`/api/reviews/${reviewId}/like`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
       });
 
       if (response.ok) {
         onRefresh();
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to like review');
     }
   };
@@ -112,14 +112,14 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ movieId, reviews, stats, 
       const response = await fetch(`/api/reviews/${reviewId}/dislike`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
       });
 
       if (response.ok) {
         onRefresh();
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to dislike review');
     }
   };
@@ -128,7 +128,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ movieId, reviews, stats, 
     const sizeClasses = {
       sm: 'h-3 w-3',
       md: 'h-4 w-4',
-      lg: 'h-6 w-6'
+      lg: 'h-6 w-6',
     };
 
     return (
@@ -161,18 +161,14 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ movieId, reviews, stats, 
 
         <div className="flex items-center space-x-8">
           <div className="text-center">
-            <div className="text-5xl font-bold text-white mb-2">
-              {stats.avgRating.toFixed(1)}
-            </div>
+            <div className="text-5xl font-bold text-white mb-2">{stats.avgRating.toFixed(1)}</div>
             {renderStars(Math.round(stats.avgRating), 'lg')}
-            <p className="text-gray-400 text-sm mt-2">
-              Based on {stats.totalReviews} reviews
-            </p>
+            <p className="text-gray-400 text-sm mt-2">Based on {stats.totalReviews} reviews</p>
           </div>
 
           <div className="flex-1">
             {[5, 4, 3, 2, 1].map((rating) => {
-              const count = reviews.filter(r => r.rating === rating).length;
+              const count = reviews.filter((r) => r.rating === rating).length;
               const percentage = stats.totalReviews > 0 ? (count / stats.totalReviews) * 100 : 0;
 
               return (
@@ -204,9 +200,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ movieId, reviews, stats, 
           <h3 className="text-xl font-bold text-white mb-4">Write Your Review</h3>
           <form onSubmit={handleSubmitReview} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Your Rating
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Your Rating</label>
               <div className="flex space-x-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -226,9 +220,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ movieId, reviews, stats, 
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Review Title
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Review Title</label>
               <input
                 type="text"
                 value={reviewForm.title}
@@ -242,9 +234,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ movieId, reviews, stats, 
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Your Review
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Your Review</label>
               <textarea
                 value={reviewForm.content}
                 onChange={(e) => setReviewForm({ ...reviewForm, content: e.target.value })}
@@ -344,7 +334,8 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ movieId, reviews, stats, 
                   ) : (
                     <div className="h-12 w-12 rounded-full bg-gray-700 flex items-center justify-center">
                       <span className="text-white font-medium">
-                        {review.user.firstName[0]}{review.user.lastName[0]}
+                        {review.user.firstName[0]}
+                        {review.user.lastName[0]}
                       </span>
                     </div>
                   )}
@@ -370,9 +361,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ movieId, reviews, stats, 
                     </span>
                   </div>
 
-                  <h4 className="text-lg font-semibold text-white mb-2">
-                    {review.title}
-                  </h4>
+                  <h4 className="text-lg font-semibold text-white mb-2">{review.title}</h4>
 
                   {review.isSpoiler && !showSpoilers ? (
                     <div className="bg-gray-700 p-4 rounded">

@@ -12,7 +12,7 @@ const apiLimiter = rateLimit({
 // Auth rate limiter (stricter)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5,
+  max: 10,
   skipSuccessfulRequests: true,
   message: 'Too many login attempts, please try again later.',
 });

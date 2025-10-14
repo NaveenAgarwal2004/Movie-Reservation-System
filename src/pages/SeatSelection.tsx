@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useSocket } from '../contexts/SocketContext';
-import { useAuth } from '../contexts/AuthContext';
+
 import toast from 'react-hot-toast';
 
 interface Seat {
@@ -20,38 +20,60 @@ interface Seat {
 const SeatSelection = () => {
   const { showtimeId } = useParams<{ showtimeId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+
   const { socket, joinShowtime, leaveShowtime, selectSeat, deselectSeat } = useSocket();
-  
+
   const [selectedSeats, setSelectedSeats] = useState<Seat[]>([]);
-  const [showtime, setShowtime] = useState<any>(null);
+  const [showtime, setShowtime] = useState<{
+    id: string;
+    movie: {
+      title: string;
+      poster: string;
+      duration: string;
+      rating: number;
+    };
+    theater: {
+      name: string;
+      address: string;
+    };
+    date: string;
+    time: string;
+    price: {
+      standard: number;
+      premium: number;
+      vip: number;
+    };
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [reservationTimer, setReservationTimer] = useState<number | null>(null);
   const [showBestSeats, setShowBestSeats] = useState(false);
-  const [filterType, setFilterType] = useState<'all' | 'standard' | 'premium' | 'vip' | 'wheelchair' | 'couple'>('all');
+  const [filterType, setFilterType] = useState<
+    'all' | 'standard' | 'premium' | 'vip' | 'wheelchair' | 'couple'
+  >('all');
 
   // Mock showtime data
   useEffect(() => {
     setTimeout(() => {
       setShowtime({
-        id: showtimeId,
+        id: showtimeId!,
         movie: {
           title: 'The Dark Knight',
-          poster: 'https://images.pexels.com/photos/7991579/pexels-photo-7991579.jpeg?auto=compress&cs=tinysrgb&w=300',
+          poster:
+            'https://images.pexels.com/photos/7991579/pexels-photo-7991579.jpeg?auto=compress&cs=tinysrgb&w=300',
           duration: '152 min',
-          rating: 9.0
+          rating: 9.0,
         },
         theater: {
           name: 'CineMax Downtown',
-          address: '123 Main St, Downtown'
+          address: '123 Main St, Downtown',
         },
         date: '2024-01-15',
         time: '7:30 PM',
         price: {
           standard: 12,
           premium: 15,
-          vip: 20
-        }
+          vip: 20,
+        },
       });
       setLoading(false);
     }, 1000);
@@ -62,18 +84,23 @@ const SeatSelection = () => {
       joinShowtime(showtimeId);
       return () => leaveShowtime(showtimeId);
     }
-  }, [showtimeId, socket]);
+  }, [showtimeId, socket, joinShowtime, leaveShowtime]);
 
   // Reservation timer
   useEffect(() => {
-    if (selectedSeats.length > 0 && !reservationTimer) {
-      const timer = 900; // 15 minutes in seconds
-      setReservationTimer(timer);
+    let interval: ReturnType<typeof setInterval> | null = null;
 
-      const interval = setInterval(() => {
+    // Initialize timer when seats are selected and no timer exists
+    if (selectedSeats.length > 0 && reservationTimer === null) {
+      setReservationTimer(900); // 15 minutes in seconds
+    }
+
+    // Start countdown when a timer exists
+    if (reservationTimer !== null) {
+      interval = setInterval(() => {
         setReservationTimer((prev) => {
           if (prev === null || prev <= 1) {
-            clearInterval(interval);
+            if (interval) clearInterval(interval);
             toast.error('Reservation expired! Please select seats again.');
             setSelectedSeats([]);
             return null;
@@ -81,10 +108,13 @@ const SeatSelection = () => {
           return prev - 1;
         });
       }, 1000);
-
-      return () => clearInterval(interval);
     }
-  }, [selectedSeats.length]);
+
+    // Always clear interval on cleanup
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [selectedSeats.length, reservationTimer]);
 
   const generateSeats = (): Seat[][] => {
     const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
@@ -130,7 +160,7 @@ const SeatSelection = () => {
           isSelected: false,
           isReserved: false,
           isWheelchair,
-          isCouple
+          isCouple,
         });
       }
       seatLayout.push(rowSeats);
@@ -146,8 +176,8 @@ const SeatSelection = () => {
     const bestRows = seatLayout.slice(4, 7); // Rows E, F, G
     const centerSeats: Seat[] = [];
 
-    bestRows.forEach(row => {
-      const availableInRow = row.filter(seat => seat.isAvailable && !seat.isReserved);
+    bestRows.forEach((row) => {
+      const availableInRow = row.filter((seat) => seat.isAvailable && !seat.isReserved);
       const center = Math.floor(availableInRow.length / 2);
       const nearCenter = availableInRow.slice(Math.max(0, center - count), center + count);
       centerSeats.push(...nearCenter);
@@ -160,10 +190,10 @@ const SeatSelection = () => {
     if (!seat.isAvailable || seat.isReserved) return;
 
     const seatKey = `${seat.row}${seat.number}`;
-    const isCurrentlySelected = selectedSeats.some(s => `${s.row}${s.number}` === seatKey);
+    const isCurrentlySelected = selectedSeats.some((s) => `${s.row}${s.number}` === seatKey);
 
     if (isCurrentlySelected) {
-      setSelectedSeats(prev => prev.filter(s => `${s.row}${s.number}` !== seatKey));
+      setSelectedSeats((prev) => prev.filter((s) => `${s.row}${s.number}` !== seatKey));
       if (showtimeId) {
         deselectSeat(showtimeId, seat);
       }
@@ -172,17 +202,19 @@ const SeatSelection = () => {
         toast.error('You can select maximum 8 seats');
         return;
       }
-      
+
       // Check for couple seat pairing
       if (seat.isCouple) {
         const adjacentSeat = seatLayout
           .flat()
-          .find(s => s.row === seat.row && s.number === seat.number + 1 && s.isCouple);
-        
+          .find((s) => s.row === seat.row && s.number === seat.number + 1 && s.isCouple);
+
         if (adjacentSeat && adjacentSeat.isAvailable && !adjacentSeat.isReserved) {
-          const confirmPair = window.confirm('This is a couple seat. Would you like to select both seats?');
+          const confirmPair = window.confirm(
+            'This is a couple seat. Would you like to select both seats?'
+          );
           if (confirmPair) {
-            setSelectedSeats(prev => [...prev, seat, adjacentSeat]);
+            setSelectedSeats((prev) => [...prev, seat, adjacentSeat]);
             if (showtimeId) {
               selectSeat(showtimeId, seat);
               selectSeat(showtimeId, adjacentSeat);
@@ -191,8 +223,8 @@ const SeatSelection = () => {
           }
         }
       }
-      
-      setSelectedSeats(prev => [...prev, seat]);
+
+      setSelectedSeats((prev) => [...prev, seat]);
       if (showtimeId) {
         selectSeat(showtimeId, seat);
       }
@@ -202,23 +234,24 @@ const SeatSelection = () => {
   const handleSelectBestSeats = () => {
     const count = Math.min(2, 8 - selectedSeats.length);
     const bestSeats = getBestSeats(count);
-    
+
     if (bestSeats.length === 0) {
       toast.error('No optimal seats available');
       return;
     }
-    
-    bestSeats.forEach(seat => handleSeatClick(seat));
+
+    bestSeats.forEach((seat) => handleSeatClick(seat));
     setShowBestSeats(false);
     toast.success(`Selected ${bestSeats.length} best available seats!`);
   };
 
   const getSeatClass = (seat: Seat) => {
     const seatKey = `${seat.row}${seat.number}`;
-    const isSelected = selectedSeats.some(s => `${s.row}${s.number}` === seatKey);
-    const isBestSeat = showBestSeats && getBestSeats(2).some(s => `${s.row}${s.number}` === seatKey);
+    const isSelected = selectedSeats.some((s) => `${s.row}${s.number}` === seatKey);
+    const isBestSeat =
+      showBestSeats && getBestSeats(2).some((s) => `${s.row}${s.number}` === seatKey);
 
-    let baseClass = 'w-8 h-8 rounded-t-lg text-xs font-medium transition-all duration-200 ';
+    const baseClass = 'w-8 h-8 rounded-t-lg text-xs font-medium transition-all duration-200 ';
 
     if (!seat.isAvailable) {
       return baseClass + 'bg-gray-600 cursor-not-allowed opacity-50';
@@ -232,14 +265,14 @@ const SeatSelection = () => {
     if (isBestSeat) {
       return baseClass + 'bg-green-500 hover:bg-green-600 cursor-pointer animate-pulse';
     }
-    
+
     if (seat.isWheelchair) {
       return baseClass + 'bg-blue-600 hover:bg-blue-700 cursor-pointer border-2 border-blue-400';
     }
     if (seat.isCouple) {
       return baseClass + 'bg-pink-600 hover:bg-pink-700 cursor-pointer';
     }
-    
+
     switch (seat.type) {
       case 'vip':
         return baseClass + 'bg-purple-600 hover:bg-purple-700 cursor-pointer';
@@ -256,16 +289,8 @@ const SeatSelection = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const filteredSeats = seatLayout.map(row => 
-    row.filter(seat => {
-      if (filterType === 'all') return true;
-      if (filterType === 'wheelchair') return seat.isWheelchair;
-      if (filterType === 'couple') return seat.isCouple;
-      return seat.type === filterType;
-    }));
-
   const totalAmount = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
-  const convenienceFee = 2.50;
+  const convenienceFee = 2.5;
   const gst = totalAmount * 0.18; // 18% GST
 
   const handleProceedToCheckout = () => {
@@ -307,7 +332,8 @@ const SeatSelection = () => {
                 <p className="text-gray-400 mb-1">{showtime?.theater.name}</p>
                 <p className="text-gray-400 mb-1">{showtime?.theater.address}</p>
                 <p className="text-white font-semibold">
-                  {new Date(showtime?.date).toLocaleDateString()} at {showtime?.time}
+                  {showtime?.date && new Date(showtime.date).toLocaleDateString()} at{' '}
+                  {showtime?.time}
                 </p>
               </div>
             </div>
@@ -315,7 +341,9 @@ const SeatSelection = () => {
             {reservationTimer !== null && (
               <div className="text-center">
                 <p className="text-gray-400 text-sm mb-1">Time remaining</p>
-                <p className={`text-2xl font-bold ${reservationTimer < 60 ? 'text-red-500' : 'text-white'}`}>
+                <p
+                  className={`text-2xl font-bold ${reservationTimer < 60 ? 'text-red-500' : 'text-white'}`}
+                >
                   {formatTime(reservationTimer)}
                 </p>
               </div>
@@ -334,7 +362,7 @@ const SeatSelection = () => {
             >
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-white">Select Your Seats</h2>
-                
+
                 <div className="flex space-x-2">
                   <button
                     onClick={() => setShowBestSeats(!showBestSeats)}
@@ -342,10 +370,20 @@ const SeatSelection = () => {
                   >
                     {showBestSeats ? 'Hide' : 'Show'} Best Seats
                   </button>
-                  
+
                   <select
                     value={filterType}
-                    onChange={(e) => setFilterType(e.target.value as any)}
+                    onChange={(e) =>
+                      setFilterType(
+                        e.target.value as
+                          | 'all'
+                          | 'standard'
+                          | 'premium'
+                          | 'vip'
+                          | 'wheelchair'
+                          | 'couple'
+                      )
+                    }
                     className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
                   >
                     <option value="all">All Seats</option>
@@ -371,7 +409,7 @@ const SeatSelection = () => {
                   </button>
                 </div>
               )}
-              
+
               {/* Screen */}
               <div className="mb-8">
                 <div className="bg-gradient-to-r from-gray-600 via-gray-500 to-gray-600 h-4 rounded-t-full mx-auto w-3/4 mb-2 shadow-lg"></div>
@@ -382,7 +420,9 @@ const SeatSelection = () => {
               <div className="space-y-2 mb-6 overflow-x-auto">
                 {seatLayout.map((row, rowIndex) => (
                   <div key={rowIndex} className="flex justify-center items-center space-x-1">
-                    <span className="text-gray-400 text-sm w-6 text-center font-medium">{row[0].row}</span>
+                    <span className="text-gray-400 text-sm w-6 text-center font-medium">
+                      {row[0].row}
+                    </span>
                     <div className="flex space-x-1">
                       {row.slice(0, 6).map((seat, seatIndex) => (
                         <div key={seatIndex} className="relative group">
@@ -394,10 +434,11 @@ const SeatSelection = () => {
                           >
                             {seat.isWheelchair ? '♿' : seat.isCouple ? '💑' : seat.number}
                           </button>
-                          
+
                           {/* Tooltip */}
                           <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                            {seat.row}{seat.number} - {seat.type} - ${seat.price}
+                            {seat.row}
+                            {seat.number} - {seat.type} - ${seat.price}
                             {seat.isWheelchair && ' (Wheelchair)'}
                             {seat.isCouple && ' (Couple)'}
                           </div>
@@ -416,16 +457,19 @@ const SeatSelection = () => {
                           >
                             {seat.isWheelchair ? '♿' : seat.isCouple ? '💑' : seat.number}
                           </button>
-                          
+
                           <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                            {seat.row}{seat.number} - {seat.type} - ${seat.price}
+                            {seat.row}
+                            {seat.number} - {seat.type} - ${seat.price}
                             {seat.isWheelchair && ' (Wheelchair)'}
                             {seat.isCouple && ' (Couple)'}
                           </div>
                         </div>
                       ))}
                     </div>
-                    <span className="text-gray-400 text-sm w-6 text-center font-medium">{row[0].row}</span>
+                    <span className="text-gray-400 text-sm w-6 text-center font-medium">
+                      {row[0].row}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -477,19 +521,17 @@ const SeatSelection = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <h3 className="text-lg font-bold text-white mb-4">Booking Summary</h3>
-              
+
               {selectedSeats.length > 0 ? (
                 <div className="space-y-4">
                   <div>
                     <p className="text-gray-400 text-sm mb-2">Selected Seats:</p>
                     <div className="flex flex-wrap gap-2">
                       {selectedSeats.map((seat, index) => (
-                        <div
-                          key={index}
-                          className="relative group"
-                        >
+                        <div key={index} className="relative group">
                           <span className="bg-red-600 text-white px-3 py-1 rounded text-sm font-medium">
-                            {seat.row}{seat.number}
+                            {seat.row}
+                            {seat.number}
                           </span>
                           <button
                             onClick={() => handleSeatClick(seat)}
@@ -501,7 +543,7 @@ const SeatSelection = () => {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div className="border-t border-gray-700 pt-4 space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-400">Seats ({selectedSeats.length})</span>
@@ -518,13 +560,17 @@ const SeatSelection = () => {
                     <div className="border-t border-gray-700 pt-2 mt-2">
                       <div className="flex justify-between font-bold">
                         <span className="text-white">Total</span>
-                        <span className="text-red-500">${(totalAmount + convenienceFee + gst).toFixed(2)}</span>
+                        <span className="text-red-500">
+                          ${(totalAmount + convenienceFee + gst).toFixed(2)}
+                        </span>
                       </div>
                     </div>
                   </div>
 
                   <div className="bg-gray-700 rounded-lg p-3 text-xs text-gray-300">
-                    <p className="mb-1">💡 <strong>Tips:</strong></p>
+                    <p className="mb-1">
+                      💡 <strong>Tips:</strong>
+                    </p>
                     <ul className="list-disc list-inside space-y-1">
                       <li>Center seats offer best view</li>
                       <li>Premium seats have extra legroom</li>
@@ -535,9 +581,7 @@ const SeatSelection = () => {
               ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-400 text-sm mb-4">No seats selected</p>
-                  <p className="text-gray-500 text-xs">
-                    Click on available seats to select them
-                  </p>
+                  <p className="text-gray-500 text-xs">Click on available seats to select them</p>
                 </div>
               )}
 

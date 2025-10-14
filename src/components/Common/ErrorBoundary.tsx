@@ -1,4 +1,5 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { Component } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 interface Props {
@@ -18,20 +19,20 @@ class ErrorBoundary extends Component<Props, State> {
     this.state = {
       hasError: false,
       error: null,
-      errorInfo: null
+      errorInfo: null,
     };
   }
 
-  static getDerivedStateFromError(error: Error): Partial<State> {
+  static getDerivedStateFromError(): Partial<State> {
     return { hasError: true };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Error caught by boundary:', error, errorInfo);
-    
+
     this.setState({
       error,
-      errorInfo
+      errorInfo,
     });
 
     // Log to error reporting service (e.g., Sentry)
@@ -39,7 +40,7 @@ class ErrorBoundary extends Component<Props, State> {
       // TODO: Send to error tracking service
       console.error('Production error:', {
         error: error.toString(),
-        componentStack: errorInfo.componentStack
+        componentStack: errorInfo.componentStack,
       });
     }
   }
@@ -48,7 +49,7 @@ class ErrorBoundary extends Component<Props, State> {
     this.setState({
       hasError: false,
       error: null,
-      errorInfo: null
+      errorInfo: null,
     });
   };
 
@@ -62,13 +63,11 @@ class ErrorBoundary extends Component<Props, State> {
         <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-gray-800 rounded-lg p-8 text-center">
             <ExclamationTriangleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-white mb-2">
-              Oops! Something went wrong
-            </h1>
+            <h1 className="text-2xl font-bold text-white mb-2">Oops! Something went wrong</h1>
             <p className="text-gray-400 mb-6">
               We're sorry for the inconvenience. The error has been logged and we'll look into it.
             </p>
-            
+
             {import.meta.env.DEV && this.state.error && (
               <details className="mb-6 text-left">
                 <summary className="text-red-400 cursor-pointer mb-2">
@@ -80,7 +79,7 @@ class ErrorBoundary extends Component<Props, State> {
                 </pre>
               </details>
             )}
-            
+
             <div className="flex gap-4 justify-center">
               <button
                 onClick={this.handleReset}
@@ -89,7 +88,7 @@ class ErrorBoundary extends Component<Props, State> {
                 Try Again
               </button>
               <button
-                onClick={() => window.location.href = '/'}
+                onClick={() => (window.location.href = '/')}
                 className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
               >
                 Go Home
