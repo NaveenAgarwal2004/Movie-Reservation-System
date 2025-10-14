@@ -9,7 +9,7 @@ A full-stack movie ticket booking application with real-time seat selection, sec
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
 ## ✨ Features
-
+ 
 ### 🎯 Core Features
 - **Movie Browsing**: Browse movies with advanced filters (genre, rating, language)
 - **Seat Selection**: Interactive seat map with real-time availability
