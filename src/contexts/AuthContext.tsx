@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import { authAPI, type User, type LoginCredentials, type RegisterData } from '../api/auth';
+import { authAPI, type User, type RegisterData } from '../api/auth';
 import toast from 'react-hot-toast';
 
 interface AuthContextType {
@@ -21,14 +21,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
 interface AuthProviderProps {
   children: ReactNode;
 }
@@ -39,11 +31,35 @@ const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-  const [refreshToken, setRefreshToken] = useState<string | null>(localStorage.getItem('refreshToken'));
+  const [refreshToken, setRefreshToken] = useState<string | null>(
+    localStorage.getItem('refreshToken')
+  );
   const [loading, setLoading] = useState(true);
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
   const [lockoutTime, setLockoutTime] = useState<number | null>(null);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    setToken(null);
+    setRefreshToken(null);
+    setUser(null);
+    toast.success('Logged out successfully');
+  }, []);
+
+  const refreshAccessToken = useCallback(async () => {
+    try {
+      const storedRefreshToken = localStorage.getItem('refreshToken');
+      if (!storedRefreshToken) return;
+
+      const response = await authAPI.refreshToken(storedRefreshToken);
+      localStorage.setItem('token', response.token);
+      setToken(response.token);
+    } catch {
+      logout();
+    }
+  }, [logout]);
 
   // Check for lockout on mount
   useEffect(() => {
@@ -51,11 +67,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     if (storedLockoutTime) {
       const lockoutTimestamp = parseInt(storedLockoutTime);
       const now = Date.now();
-      
+
       if (now < lockoutTimestamp) {
         setIsLocked(true);
         setLockoutTime(lockoutTimestamp);
-        
+
         const timeUntilUnlock = lockoutTimestamp - now;
         setTimeout(() => {
           setIsLocked(false);
@@ -68,7 +84,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         localStorage.removeItem('loginAttempts');
       }
     }
-    
+
     const storedAttempts = localStorage.getItem('loginAttempts');
     if (storedAttempts) {
       setLoginAttempts(parseInt(storedAttempts));
@@ -78,12 +94,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     if (!token) return;
 
-    const refreshInterval = setInterval(() => {
-      refreshAccessToken();
-    }, 45 * 60 * 1000);
+    const refreshInterval = setInterval(
+      () => {
+        refreshAccessToken();
+      },
+      45 * 60 * 1000
+    );
 
     return () => clearInterval(refreshInterval);
-  }, [token]);
+  }, [token, refreshAccessToken]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -93,8 +112,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           const userData = await authAPI.getCurrentUser();
           setUser(userData);
           setToken(storedToken);
-        } catch (error: any) {
-          if (error.response?.status === 401) {
+        } catch (error: unknown) {
+          const err = error as { response?: { status?: number } };
+          if (err.response?.status === 401) {
             // Try to refresh token
             const storedRefreshToken = localStorage.getItem('refreshToken');
             if (storedRefreshToken) {
@@ -105,7 +125,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                 // Retry getCurrentUser with new token
                 const userData = await authAPI.getCurrentUser();
                 setUser(userData);
-              } catch (refreshError) {
+              } catch {
                 // Refresh failed, logout
                 localStorage.removeItem('token');
                 localStorage.removeItem('refreshToken');
@@ -137,19 +157,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     checkAuth();
   }, []);
 
-  const refreshAccessToken = useCallback(async () => {
-    try {
-      const storedRefreshToken = localStorage.getItem('refreshToken');
-      if (!storedRefreshToken) return;
-
-      const response = await authAPI.refreshToken(storedRefreshToken);
-      localStorage.setItem('token', response.token);
-      setToken(response.token);
-    } catch (error) {
-      logout();
-    }
-  }, []);
-
   const login = async (email: string, password: string) => {
     if (isLocked) {
       const remainingTime = Math.ceil((lockoutTime! - Date.now()) / 60000);
@@ -159,19 +166,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     try {
       const response = await authAPI.login({ email, password });
-      
+
       localStorage.setItem('token', response.token);
       localStorage.setItem('refreshToken', response.refreshToken || '');
       localStorage.removeItem('loginAttempts');
       localStorage.removeItem('lockoutTime');
-      
+
       setToken(response.token);
       setRefreshToken(response.refreshToken || null);
       setUser(response.user);
       setLoginAttempts(0);
-      
+
       toast.success('Login successful!');
-    } catch (error: any) {
+    } catch (error: unknown) {
       const newAttempts = loginAttempts + 1;
       setLoginAttempts(newAttempts);
       localStorage.setItem('loginAttempts', newAttempts.toString());
@@ -186,7 +193,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         const remainingAttempts = MAX_LOGIN_ATTEMPTS - newAttempts;
         toast.error(`Invalid credentials. ${remainingAttempts} attempts remaining.`);
       }
-      
+
       throw error;
     }
   };
@@ -196,12 +203,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumbers = /\d/.test(password);
-    
+
     if (password.length < 8) {
       toast.error('Password must be at least 8 characters long');
       throw new Error('Weak password');
     }
-    
+
     if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
       toast.error('Password must contain uppercase, lowercase, and numbers');
       throw new Error('Weak password');
@@ -209,37 +216,30 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     try {
       const response = await authAPI.register(userData);
-      
+
       localStorage.setItem('token', response.token);
       localStorage.setItem('refreshToken', response.refreshToken || '');
       setToken(response.token);
       setRefreshToken(response.refreshToken || null);
       setUser(response.user);
-      
+
       toast.success('Registration successful!');
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Registration failed';
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      const message = err.response?.data?.message || 'Registration failed';
       toast.error(message);
       throw error;
     }
   };
-
-  const logout = useCallback(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
-    setToken(null);
-    setRefreshToken(null);
-    setUser(null);
-    toast.success('Logged out successfully');
-  }, []);
 
   const updateProfile = async (userData: Partial<User>) => {
     try {
       const response = await authAPI.updateProfile(userData);
       setUser(response.user);
       toast.success('Profile updated successfully');
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Profile update failed';
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      const message = err.response?.data?.message || 'Profile update failed';
       toast.error(message);
       throw error;
     }
@@ -258,12 +258,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
     loginAttempts,
-    isLocked
+    isLocked,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+// Export useAuth hook separately to avoid fast refresh issues
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };

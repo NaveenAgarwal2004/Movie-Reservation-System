@@ -16,14 +16,6 @@ interface SocketContextType {
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
 
-export const useSocket = () => {
-  const context = useContext(SocketContext);
-  if (context === undefined) {
-    throw new Error('useSocket must be used within a SocketProvider');
-  }
-  return context;
-};
-
 interface SocketProviderProps {
   children: ReactNode;
 }
@@ -32,7 +24,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
   const [selectedSeats, setSelectedSeats] = useState<{ [key: string]: unknown }>({});
-  const [reservedSeats, setReservedSeats] = useState<{ [key: string]: unknown }>({});
+  const [reservedSeats] = useState<{ [key: string]: unknown }>({});
   const { token, isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -41,8 +33,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       const apiUrl = import.meta.env.VITE_REACT_APP_API_URL || 'http://localhost:5000';
       const newSocket = io(apiUrl, {
         auth: {
-          token
-        }
+          token,
+        },
       });
 
       newSocket.on('connect', () => {
@@ -63,19 +55,19 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       // Seat selection events
       newSocket.on('seat-selected', (data) => {
         const seatKey = `${data.seat.row}-${data.seat.number}`;
-        setSelectedSeats(prev => ({
+        setSelectedSeats((prev) => ({
           ...prev,
           [seatKey]: {
             ...data.seat,
             userId: data.userId,
-            expiresAt: data.expiresAt
-          }
+            expiresAt: data.expiresAt,
+          },
         }));
       });
 
       newSocket.on('seat-deselected', (data) => {
         const seatKey = `${data.seat.row}-${data.seat.number}`;
-        setSelectedSeats(prev => {
+        setSelectedSeats((prev) => {
           const newSeats = { ...prev };
           delete newSeats[seatKey];
           return newSeats;
@@ -84,7 +76,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
       newSocket.on('seat-released', (data) => {
         const seatKey = `${data.seat.row}-${data.seat.number}`;
-        setSelectedSeats(prev => {
+        setSelectedSeats((prev) => {
           const newSeats = { ...prev };
           delete newSeats[seatKey];
           return newSeats;
@@ -103,7 +95,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         setConnected(false);
       }
     }
-  }, [isAuthenticated, token]);
+  }, [isAuthenticated, token, socket]);
 
   const joinShowtime = (showtimeId: string) => {
     if (socket) {
@@ -137,12 +129,17 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     selectSeat,
     deselectSeat,
     selectedSeats,
-    reservedSeats
+    reservedSeats,
   };
 
-  return (
-    <SocketContext.Provider value={value}>
-      {children}
-    </SocketContext.Provider>
-  );
+  return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>;
+};
+
+// Export useSocket hook separately to avoid fast refresh issues
+export const useSocket = () => {
+  const context = useContext(SocketContext);
+  if (context === undefined) {
+    throw new Error('useSocket must be used within a SocketProvider');
+  }
+  return context;
 };

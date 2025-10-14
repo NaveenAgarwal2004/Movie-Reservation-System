@@ -26,10 +26,10 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock global object for ESLint
-(globalThis as any).global = globalThis;
+(globalThis as typeof globalThis & { global: typeof globalThis }).global = globalThis;
 
 // Mock IntersectionObserver
-(globalThis as any).IntersectionObserver = class IntersectionObserver {
+class IntersectionObserverMock {
   constructor() {}
   disconnect() {}
   observe() {}
@@ -37,7 +37,11 @@ Object.defineProperty(window, 'matchMedia', {
     return [];
   }
   unobserve() {}
-} as unknown as typeof IntersectionObserver;
+}
+
+(
+  globalThis as typeof globalThis & { IntersectionObserver: typeof IntersectionObserver }
+).IntersectionObserver = IntersectionObserverMock as unknown as typeof IntersectionObserver;
 
 // Mock localStorage
 const localStorageMock = {
@@ -53,13 +57,9 @@ Object.defineProperty(window, 'localStorage', {
 });
 
 // Mock console methods to avoid noise in tests
-(globalThis as any).console = {
-  ...console,
-  // Keep error and warn for debugging
+// Using Object.assign instead of type casting to avoid 'Console' not defined error
+Object.assign(globalThis.console, {
   log: () => {},
   info: () => {},
   debug: () => {},
-};
-
-// Mock global object for ESLint
-(globalThis as any).global = globalThis;
+});
