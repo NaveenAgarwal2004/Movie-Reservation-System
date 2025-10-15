@@ -1,20 +1,19 @@
 /* eslint-env node */
-import express from 'express';
-import axios from 'axios';
-import Watchlist from '../models/Watchlist.js';
-import authMiddleware from '../middleware/auth.js';
+const express = require('express');
+const axios = require('axios');
+const Watchlist = require('../models/Watchlist.js');
+const authMiddleware = require('../middleware/auth.js');
 
 const router = express.Router();
 
 // OMDB and TMDB configuration
-const OMDB_API_KEY = import.meta.env.OMDB_API_KEY || '';
-const TMDB_API_KEY = import.meta.env.TMDB_API_KEY || '';
+const OMDB_API_KEY = process.env.OMDB_API_KEY || '';
+const TMDB_API_KEY = process.env.TMDB_API_KEY || '';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
-// Helper function to fetch movie data from OMDB with TMDB fallback
+// Helper function to fetch movie data
 const fetchMovieData = async (imdbId) => {
   try {
-    // Try OMDB first
     if (OMDB_API_KEY) {
       const omdbResponse = await axios.get('https://www.omdbapi.com/', {
         params: {
@@ -38,10 +37,7 @@ const fetchMovieData = async (imdbId) => {
       }
     }
 
-    // Fallback to TMDB if OMDB fails or no API key
     if (TMDB_API_KEY) {
-      // Convert IMDB ID to TMDB ID (this is a simplified approach)
-      // In a real implementation, you might need a mapping service
       const tmdbResponse = await axios.get(`${TMDB_BASE_URL}/find/${imdbId}`, {
         params: {
           api_key: TMDB_API_KEY,
@@ -57,17 +53,16 @@ const fetchMovieData = async (imdbId) => {
       ) {
         const movie = tmdbResponse.data.movie_results[0];
         return {
-          _id: imdbId, // Keep IMDB ID as _id for consistency
+          _id: imdbId,
           title: movie.title,
           poster: movie.poster_path
             ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
             : 'https://via.placeholder.com/300x450/374151/FFFFFF?text=No+Poster',
-          genre: movie.genre_ids || [], // TMDB uses genre IDs, frontend will handle mapping
+          genre: movie.genre_ids || [],
         };
       }
     }
 
-    // Final fallback
     return {
       _id: imdbId,
       title: 'Unknown Movie',
@@ -85,19 +80,15 @@ const fetchMovieData = async (imdbId) => {
   }
 };
 
-// Get user's watchlist
+// Routes
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const watchlist = await Watchlist.find({ user: req.user.userId }).sort({ addedAt: -1 });
 
-    // Fetch movie details for each watchlist item
     const watchlistWithMovies = await Promise.all(
       watchlist.map(async (item) => {
         const movieData = await fetchMovieData(item.movieTmdbId);
-        return {
-          ...item.toObject(),
-          movie: movieData,
-        };
+        return { ...item.toObject(), movie: movieData };
       })
     );
 
@@ -108,7 +99,6 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-// Add to watchlist
 router.post('/:movieId', authMiddleware, async (req, res) => {
   try {
     const { movieId } = req.params;
@@ -125,29 +115,22 @@ router.post('/:movieId', authMiddleware, async (req, res) => {
 
     await watchlistItem.save();
 
-    res.status(201).json({
-      message: 'Added to watchlist',
-      item: watchlistItem,
-    });
+    res.status(201).json({ message: 'Added to watchlist', item: watchlistItem });
   } catch (error) {
     console.error('Add to watchlist error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Remove from watchlist
 router.delete('/:movieId', authMiddleware, async (req, res) => {
   try {
     const { movieId } = req.params;
-
     const result = await Watchlist.findOneAndDelete({
       user: req.user.userId,
       movieTmdbId: movieId,
     });
 
-    if (!result) {
-      return res.status(404).json({ message: 'Movie not in watchlist' });
-    }
+    if (!result) return res.status(404).json({ message: 'Movie not in watchlist' });
 
     res.json({ message: 'Removed from watchlist' });
   } catch (error) {
@@ -156,7 +139,6 @@ router.delete('/:movieId', authMiddleware, async (req, res) => {
   }
 });
 
-// Toggle notification
 router.patch('/:movieId/notify', authMiddleware, async (req, res) => {
   try {
     const { movieId } = req.params;
@@ -184,16 +166,13 @@ router.patch('/:movieId/notify', authMiddleware, async (req, res) => {
   }
 });
 
-// Check if movie is in watchlist
 router.get('/check/:movieId', authMiddleware, async (req, res) => {
   try {
     const { movieId } = req.params;
-
     const exists = await Watchlist.findOne({
       user: req.user.userId,
       movieTmdbId: movieId,
     });
-
     res.json({ inWatchlist: !!exists });
   } catch (error) {
     console.error('Check watchlist error:', error);
@@ -201,4 +180,4 @@ router.get('/check/:movieId', authMiddleware, async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;
