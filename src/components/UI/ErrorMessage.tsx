@@ -8,11 +8,7 @@ interface ErrorMessageProps {
   className?: string;
 }
 
-const ErrorMessage: React.FC<ErrorMessageProps> = ({ 
-  message, 
-  onRetry, 
-  className = '' 
-}) => {
+const ErrorMessage: React.FC<ErrorMessageProps> = ({ message, onRetry, className = '' }) => {
   return (
     <motion.div
       className={`flex flex-col items-center justify-center p-8 text-center ${className}`}

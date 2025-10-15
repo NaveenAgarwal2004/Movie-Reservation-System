@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom'; // Add useLocation here
-import { 
-  CreditCardIcon, 
-  LockClosedIcon, 
+import {
+  CreditCardIcon,
+  LockClosedIcon,
   CheckCircleIcon,
   ClockIcon,
   MapPinIcon,
-  TicketIcon
+  TicketIcon,
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
@@ -22,73 +22,81 @@ const Checkout = () => {
     number: '',
     expiry: '',
     cvv: '',
-    name: ''
+    name: '',
   });
 
   // Use booking data from navigation state or fallback to mock data
-  const booking = location.state?.selectedSeats ? {
-    id: bookingId,
-    reference: 'BK-2024-001',
-    movie: location.state.showtime?.movie || {
-      title: 'The Dark Knight',
-      poster: 'https://images.pexels.com/photos/7991579/pexels-photo-7991579.jpeg?auto=compress&cs=tinysrgb&w=300',
-      duration: '152 min',
-      rating: 9.0
-    },
-    theater: location.state.showtime?.theater || {
-      name: 'CineMax Downtown',
-      address: '123 Main St, Downtown'
-    },
-    showtime: location.state.showtime || {
-      date: '2024-01-15',
-      time: '7:30 PM'
-    },
-    seats: location.state.selectedSeats || [
-      { row: 'H', number: 15, type: 'standard', price: 12.00 },
-      { row: 'H', number: 16, type: 'standard', price: 12.00 }
-    ],
-    subtotal: location.state.selectedSeats ? location.state.selectedSeats.reduce((sum, seat) => sum + seat.price, 0) : 24.00,
-    taxes: 2.40,
-    fees: 2.10,
-    total: location.state.selectedSeats ? location.state.selectedSeats.reduce((sum, seat) => sum + seat.price, 0) + 2.40 + 2.10 : 28.50
-  } : {
-    id: bookingId,
-    reference: 'BK-2024-001',
-    movie: {
-      title: 'The Dark Knight',
-      poster: 'https://images.pexels.com/photos/7991579/pexels-photo-7991579.jpeg?auto=compress&cs=tinysrgb&w=300',
-      duration: '152 min',
-      rating: 9.0
-    },
-    theater: {
-      name: 'CineMax Downtown',
-      address: '123 Main St, Downtown'
-    },
-    showtime: {
-      date: '2024-01-15',
-      time: '7:30 PM'
-    },
-    seats: [
-      { row: 'H', number: 15, type: 'standard', price: 12.00 },
-      { row: 'H', number: 16, type: 'standard', price: 12.00 }
-    ],
-    subtotal: 24.00,
-    taxes: 2.40,
-    fees: 2.10,
-    total: 28.50
-  };
+  const booking = location.state?.selectedSeats
+    ? {
+        id: bookingId,
+        reference: 'BK-2024-001',
+        movie: location.state.showtime?.movie || {
+          title: 'The Dark Knight',
+          poster:
+            'https://images.pexels.com/photos/7991579/pexels-photo-7991579.jpeg?auto=compress&cs=tinysrgb&w=300',
+          duration: '152 min',
+          rating: 9.0,
+        },
+        theater: location.state.showtime?.theater || {
+          name: 'CineMax Downtown',
+          address: '123 Main St, Downtown',
+        },
+        showtime: location.state.showtime || {
+          date: '2024-01-15',
+          time: '7:30 PM',
+        },
+        seats: location.state.selectedSeats || [
+          { row: 'H', number: 15, type: 'standard', price: 12.0 },
+          { row: 'H', number: 16, type: 'standard', price: 12.0 },
+        ],
+        subtotal: location.state.selectedSeats
+          ? location.state.selectedSeats.reduce((sum, seat) => sum + seat.price, 0)
+          : 24.0,
+        taxes: 2.4,
+        fees: 2.1,
+        total: location.state.selectedSeats
+          ? location.state.selectedSeats.reduce((sum, seat) => sum + seat.price, 0) + 2.4 + 2.1
+          : 28.5,
+      }
+    : {
+        id: bookingId,
+        reference: 'BK-2024-001',
+        movie: {
+          title: 'The Dark Knight',
+          poster:
+            'https://images.pexels.com/photos/7991579/pexels-photo-7991579.jpeg?auto=compress&cs=tinysrgb&w=300',
+          duration: '152 min',
+          rating: 9.0,
+        },
+        theater: {
+          name: 'CineMax Downtown',
+          address: '123 Main St, Downtown',
+        },
+        showtime: {
+          date: '2024-01-15',
+          time: '7:30 PM',
+        },
+        seats: [
+          { row: 'H', number: 15, type: 'standard', price: 12.0 },
+          { row: 'H', number: 16, type: 'standard', price: 12.0 },
+        ],
+        subtotal: 24.0,
+        taxes: 2.4,
+        fees: 2.1,
+        total: 28.5,
+      };
 
   const handleCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setCardDetails(prev => ({
+    setCardDetails((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handlePayment = async () => {
     setIsProcessing(true);
-    
+
     // Simulate payment processing
     setTimeout(() => {
       setIsProcessing(false);
@@ -120,7 +128,7 @@ const Checkout = () => {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-xl font-semibold text-white mb-6">Booking Summary</h2>
-            
+
             <div className="flex items-start space-x-4 mb-6">
               <img
                 src={booking.movie.poster}
@@ -128,9 +136,7 @@ const Checkout = () => {
                 className="w-20 h-28 object-cover rounded-lg"
               />
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  {booking.movie.title}
-                </h3>
+                <h3 className="text-lg font-semibold text-white mb-2">{booking.movie.title}</h3>
                 <div className="space-y-2 text-sm text-gray-300">
                   <div className="flex items-center">
                     <MapPinIcon className="h-4 w-4 mr-2" />
@@ -138,12 +144,15 @@ const Checkout = () => {
                   </div>
                   <div className="flex items-center">
                     <ClockIcon className="h-4 w-4 mr-2" />
-                    <span>{new Date(booking.showtime.date).toLocaleDateString()} at {booking.showtime.time}</span>
+                    <span>
+                      {new Date(booking.showtime.date).toLocaleDateString()} at{' '}
+                      {booking.showtime.time}
+                    </span>
                   </div>
                   <div className="flex items-center">
                     <TicketIcon className="h-4 w-4 mr-2" />
                     <span>
-                      Seats: {booking.seats.map(seat => `${seat.row}${seat.number}`).join(', ')}
+                      Seats: {booking.seats.map((seat) => `${seat.row}${seat.number}`).join(', ')}
                     </span>
                   </div>
                 </div>
@@ -180,9 +189,7 @@ const Checkout = () => {
 
             {/* Payment Methods */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-300 mb-3">
-                Payment Method
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-3">Payment Method</label>
               <div className="space-y-3">
                 <label className="flex items-center">
                   <input
@@ -244,9 +251,7 @@ const Checkout = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">
-                      CVV
-                    </label>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">CVV</label>
                     <input
                       type="text"
                       name="cvv"

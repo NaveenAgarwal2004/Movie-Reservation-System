@@ -2,7 +2,11 @@ import React from 'react';
 import { HeartIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { useAuth } from '../../contexts/AuthContext';
-import { useCheckWatchlist, useAddToWatchlist, useRemoveFromWatchlist } from '../../hooks/useWatchlist';
+import {
+  useCheckWatchlist,
+  useAddToWatchlist,
+  useRemoveFromWatchlist,
+} from '../../hooks/useWatchlist';
 import toast from 'react-hot-toast';
 
 interface WatchlistButtonProps {
@@ -11,10 +15,10 @@ interface WatchlistButtonProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-const WatchlistButton: React.FC<WatchlistButtonProps> = ({ 
-  movieId, 
+const WatchlistButton: React.FC<WatchlistButtonProps> = ({
+  movieId,
   variant = 'button',
-  size = 'md' 
+  size = 'md',
 }) => {
   const { isAuthenticated } = useAuth();
   const { data: watchlistStatus } = useCheckWatchlist(movieId);
@@ -39,7 +43,7 @@ const WatchlistButton: React.FC<WatchlistButtonProps> = ({
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-5 w-5',
-    lg: 'h-6 w-6'
+    lg: 'h-6 w-6',
   };
 
   if (variant === 'icon') {

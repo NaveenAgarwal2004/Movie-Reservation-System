@@ -10,6 +10,7 @@ import {
   UserIcon,
   CogIcon,
   ArrowRightOnRectangleIcon,
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline';
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
@@ -22,6 +23,16 @@ const Navbar = () => {
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  // Check current API provider
+  const [apiProvider, setApiProvider] = useState(localStorage.getItem('api-provider') || 'omdb');
+
+  const toggleApiProvider = () => {
+    const newProvider = apiProvider === 'omdb' ? 'tmdb' : 'omdb';
+    localStorage.setItem('api-provider', newProvider);
+    setApiProvider(newProvider);
+    window.location.reload(); // Reload to apply changes
   };
 
   const navigation = [
@@ -54,20 +65,40 @@ const Navbar = () => {
             </div>
           </div>
 
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
+            {/* API Provider Toggle */}
+            <div className="hidden lg:flex items-center">
+              <button
+                onClick={toggleApiProvider}
+                className="flex items-center space-x-2 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-lg text-xs font-medium text-gray-300 hover:text-white transition-colors border border-gray-700"
+                title={`Currently using ${apiProvider.toUpperCase()} API. Click to switch.`}
+              >
+                <GlobeAltIcon className="h-4 w-4" />
+                <span>{apiProvider === 'omdb' ? '🇮🇳 OMDb' : '🌐 TMDB'}</span>
+                {apiProvider === 'omdb' && <span className="text-green-400 text-xs">●</span>}
+              </button>
+            </div>
+
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
                 <Link
                   to="/dashboard"
-                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="hidden md:block text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
                   My Bookings
+                </Link>
+
+                <Link
+                  to="/watchlist"
+                  className="hidden md:block text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  Watchlist
                 </Link>
 
                 {isAdmin && (
                   <Link
                     to="/admin"
-                    className="text-yellow-400 hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                    className="hidden md:block text-yellow-400 hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                   >
                     Admin Panel
                   </Link>
@@ -94,13 +125,14 @@ const Navbar = () => {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <div className="px-4 py-2 text-sm text-gray-900 border-b border-gray-200">
                         <div className="font-medium">
                           {user?.firstName} {user?.lastName}
                         </div>
-                        <div className="text-gray-500">{user?.email}</div>
+                        <div className="text-gray-500 text-xs">{user?.email}</div>
                       </div>
+
                       <Menu.Item>
                         {({ active }) => (
                           <Link
@@ -114,6 +146,69 @@ const Navbar = () => {
                           </Link>
                         )}
                       </Menu.Item>
+
+                      <Menu.Item>
+                        {({ active }) => (
+                          <Link
+                            to="/dashboard"
+                            className={`${
+                              active ? 'bg-gray-100' : ''
+                            } flex items-center px-4 py-2 text-sm text-gray-700`}
+                          >
+                            <FilmIcon className="h-4 w-4 mr-3" />
+                            My Bookings
+                          </Link>
+                        )}
+                      </Menu.Item>
+
+                      <Menu.Item>
+                        {({ active }) => (
+                          <Link
+                            to="/watchlist"
+                            className={`${
+                              active ? 'bg-gray-100' : ''
+                            } flex items-center px-4 py-2 text-sm text-gray-700`}
+                          >
+                            <svg className="h-4 w-4 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+                            </svg>
+                            Watchlist
+                          </Link>
+                        )}
+                      </Menu.Item>
+
+                      <Menu.Item>
+                        {({ active }) => (
+                          <Link
+                            to="/loyalty"
+                            className={`${
+                              active ? 'bg-gray-100' : ''
+                            } flex items-center px-4 py-2 text-sm text-gray-700`}
+                          >
+                            <svg className="h-4 w-4 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            Loyalty Program
+                          </Link>
+                        )}
+                      </Menu.Item>
+
+                      <div className="border-t border-gray-200"></div>
+
+                      <Menu.Item>
+                        {({ active }) => (
+                          <button
+                            onClick={toggleApiProvider}
+                            className={`${
+                              active ? 'bg-gray-100' : ''
+                            } flex items-center w-full px-4 py-2 text-sm text-gray-700`}
+                          >
+                            <GlobeAltIcon className="h-4 w-4 mr-3" />
+                            API: {apiProvider === 'omdb' ? '🇮🇳 OMDb' : '🌐 TMDB'}
+                          </button>
+                        )}
+                      </Menu.Item>
+
                       <Menu.Item>
                         {({ active }) => (
                           <Link
@@ -127,6 +222,7 @@ const Navbar = () => {
                           </Link>
                         )}
                       </Menu.Item>
+
                       <Menu.Item>
                         {({ active }) => (
                           <button
@@ -194,6 +290,20 @@ const Navbar = () => {
               </Link>
             ))}
 
+            {/* API Toggle in Mobile */}
+            <button
+              onClick={() => {
+                toggleApiProvider();
+                setMobileMenuOpen(false);
+              }}
+              className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left"
+            >
+              <div className="flex items-center">
+                <GlobeAltIcon className="h-5 w-5 mr-2" />
+                API: {apiProvider === 'omdb' ? '🇮🇳 OMDb' : '🌐 TMDB'}
+              </div>
+            </button>
+
             {isAuthenticated ? (
               <>
                 <Link
@@ -202,6 +312,13 @@ const Navbar = () => {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   My Bookings
+                </Link>
+                <Link
+                  to="/watchlist"
+                  className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Watchlist
                 </Link>
                 {isAdmin && (
                   <Link

@@ -50,11 +50,7 @@ export interface CreateBookingData {
 }
 
 export const bookingsAPI = {
-  getUserBookings: async (params?: {
-    page?: number;
-    limit?: number;
-    status?: string;
-  }) => {
+  getUserBookings: async (params?: { page?: number; limit?: number; status?: string }) => {
     const response = await api.get('/api/bookings/my-bookings', { params });
     return response.data;
   },

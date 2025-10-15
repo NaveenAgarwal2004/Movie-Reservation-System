@@ -11,27 +11,27 @@ const Register = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    phone: ''
+    phone: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  
+
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
-    
+
     // Clear error when user starts typing
     if (errors[e.target.name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [e.target.name]: ''
+        [e.target.name]: '',
       }));
     }
   };
@@ -75,18 +75,18 @@ const Register = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setIsLoading(true);
-    
+
     try {
       await register({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
-        phone: formData.phone
+        phone: formData.phone,
       });
       navigate('/');
     } catch (error) {
@@ -105,9 +105,7 @@ const Register = () => {
           transition={{ duration: 0.5 }}
         >
           <div className="text-center">
-            <h2 className="mt-6 text-3xl font-extrabold text-white">
-              Create your account
-            </h2>
+            <h2 className="mt-6 text-3xl font-extrabold text-white">Create your account</h2>
             <p className="mt-2 text-sm text-gray-400">
               Join CineMax and start booking your favorite movies
             </p>
@@ -160,9 +158,7 @@ const Register = () => {
                   }`}
                   placeholder="Last name"
                 />
-                {errors.lastName && (
-                  <p className="mt-1 text-sm text-red-500">{errors.lastName}</p>
-                )}
+                {errors.lastName && <p className="mt-1 text-sm text-red-500">{errors.lastName}</p>}
               </div>
             </div>
 
@@ -183,9 +179,7 @@ const Register = () => {
                 }`}
                 placeholder="Enter your email"
               />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-500">{errors.email}</p>
-              )}
+              {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
             </div>
 
             <div>
@@ -204,9 +198,7 @@ const Register = () => {
                 }`}
                 placeholder="Enter your phone number"
               />
-              {errors.phone && (
-                <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
-              )}
+              {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone}</p>}
             </div>
 
             <div>
@@ -238,9 +230,7 @@ const Register = () => {
                   )}
                 </button>
               </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-500">{errors.password}</p>
-              )}
+              {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
             </div>
 
             <div>
@@ -298,10 +288,7 @@ const Register = () => {
           <div className="text-center">
             <p className="text-sm text-gray-400">
               Already have an account?{' '}
-              <Link
-                to="/login"
-                className="font-medium text-red-600 hover:text-red-500"
-              >
+              <Link to="/login" className="font-medium text-red-600 hover:text-red-500">
                 Sign in
               </Link>
             </p>

@@ -62,5 +62,6 @@ export const shareOnSocial = {
 export const generateShareText = {
   movie: (movieTitle: string) => `Just found this amazing movie on CineMax: ${movieTitle}! 🎬`,
   booking: (movieTitle: string) => `I just booked tickets for ${movieTitle} on CineMax! 🎟️🍿`,
-  review: (movieTitle: string, rating: number) => `Watched ${movieTitle} and rated it ${rating}/5 stars! Check it out on CineMax! ⭐`,
+  review: (movieTitle: string, rating: number) =>
+    `Watched ${movieTitle} and rated it ${rating}/5 stars! Check it out on CineMax! ⭐`,
 };

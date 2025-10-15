@@ -6,10 +6,10 @@ interface LoadingSkeletonProps {
   className?: string;
 }
 
-const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({ 
-  type = 'card', 
+const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
+  type = 'card',
   count = 1,
-  className = '' 
+  className = '',
 }) => {
   const renderSkeleton = () => {
     switch (type) {
@@ -26,7 +26,7 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
             </div>
           </div>
         );
-      
+
       case 'text':
         return (
           <div className={`animate-pulse ${className}`}>
@@ -35,14 +35,14 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
             <div className="h-4 bg-gray-700 rounded w-4/6"></div>
           </div>
         );
-      
+
       case 'avatar':
         return (
           <div className={`animate-pulse ${className}`}>
             <div className="h-12 w-12 bg-gray-700 rounded-full"></div>
           </div>
         );
-      
+
       case 'list':
         return (
           <div className={`bg-gray-800 rounded-lg p-6 animate-pulse ${className}`}>
@@ -54,7 +54,7 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
             </div>
           </div>
         );
-      
+
       default:
         return null;
     }
@@ -63,9 +63,7 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
   return (
     <>
       {[...Array(count)].map((_, index) => (
-        <React.Fragment key={index}>
-          {renderSkeleton()}
-        </React.Fragment>
+        <React.Fragment key={index}>{renderSkeleton()}</React.Fragment>
       ))}
     </>
   );

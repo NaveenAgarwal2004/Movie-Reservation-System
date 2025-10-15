@@ -27,7 +27,7 @@ export const useAdminMovies = (params?: any) => {
 
 export const useCreateMovie = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: adminAPI.createMovie,
     onSuccess: () => {
@@ -43,7 +43,7 @@ export const useCreateMovie = () => {
 
 export const useUpdateMovie = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => adminAPI.updateMovie(id, data),
     onSuccess: () => {
@@ -59,7 +59,7 @@ export const useUpdateMovie = () => {
 
 export const useDeleteMovie = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: adminAPI.deleteMovie,
     onSuccess: () => {

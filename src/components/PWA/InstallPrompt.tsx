@@ -10,7 +10,7 @@ const InstallPrompt: React.FC = () => {
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      
+
       // Check if user has dismissed before
       const dismissed = localStorage.getItem('pwa-install-dismissed');
       if (!dismissed) {
@@ -66,9 +66,7 @@ const InstallPrompt: React.FC = () => {
             </div>
 
             <div className="flex-1">
-              <h3 className="text-lg font-bold text-white mb-2">
-                Install CineMax
-              </h3>
+              <h3 className="text-lg font-bold text-white mb-2">Install CineMax</h3>
               <p className="text-gray-400 text-sm mb-4">
                 Install our app for a better experience, offline access, and quick booking!
               </p>

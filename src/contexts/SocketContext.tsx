@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, type ReactNode }
 import io, { Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
+import { authAPI } from '../api/auth';
 
 interface SocketContextType {
   socket: Socket | null;
@@ -30,7 +31,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   useEffect(() => {
     if (isAuthenticated && token) {
       // Use Vite environment variable instead of process.env
-      const apiUrl = import.meta.env.VITE_REACT_APP_API_URL || 'http://localhost:5000';
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const newSocket = io(apiUrl, {
         auth: {
           token,
@@ -49,7 +50,30 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
       newSocket.on('connect_error', (error) => {
         console.error('Socket connection error:', error);
-        toast.error('Connection failed');
+        if (error.message === 'Authentication error') {
+          // Try to refresh token and reconnect
+          const refreshToken = localStorage.getItem('refreshToken');
+          if (refreshToken) {
+            authAPI
+              .refreshToken(refreshToken)
+              .then((response) => {
+                localStorage.setItem('token', response.token);
+                const newSocketWithRefreshedToken = io(apiUrl, {
+                  auth: {
+                    token: response.token,
+                  },
+                });
+                setSocket(newSocketWithRefreshedToken);
+              })
+              .catch(() => {
+                toast.error('Authentication failed. Please log in again.');
+              });
+          } else {
+            toast.error('Authentication failed. Please log in again.');
+          }
+        } else {
+          toast.error('Connection failed');
+        }
       });
 
       // Seat selection events
@@ -95,7 +119,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         setConnected(false);
       }
     }
-  }, [isAuthenticated, token, socket]);
+  }, [isAuthenticated, token]);
 
   const joinShowtime = (showtimeId: string) => {
     if (socket) {

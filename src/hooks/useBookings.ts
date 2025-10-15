@@ -19,7 +19,7 @@ export const useBookingByReference = (reference: string) => {
 
 export const useCreateBooking = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (bookingData: CreateBookingData) => bookingsAPI.createBooking(bookingData),
     onSuccess: () => {
@@ -34,7 +34,7 @@ export const useCreateBooking = () => {
 
 export const useConfirmBooking = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: ({ bookingId, transactionId }: { bookingId: string; transactionId: string }) =>
       bookingsAPI.confirmBooking(bookingId, transactionId),
@@ -50,7 +50,7 @@ export const useConfirmBooking = () => {
 
 export const useCancelBooking = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (bookingId: string) => bookingsAPI.cancelBooking(bookingId),
     onSuccess: () => {

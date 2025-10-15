@@ -10,19 +10,13 @@ interface ModalProps {
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 }
 
-const Modal: React.FC<ModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  title, 
-  children, 
-  maxWidth = 'md' 
-}) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, maxWidth = 'md' }) => {
   const maxWidthClasses = {
     sm: 'max-w-sm',
     md: 'max-w-md',
     lg: 'max-w-lg',
     xl: 'max-w-xl',
-    '2xl': 'max-w-2xl'
+    '2xl': 'max-w-2xl',
   };
 
   return (
@@ -51,7 +45,9 @@ const Modal: React.FC<ModalProps> = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className={`w-full ${maxWidthClasses[maxWidth]} transform overflow-hidden rounded-lg bg-gray-800 p-6 text-left align-middle shadow-xl transition-all`}>
+              <Dialog.Panel
+                className={`w-full ${maxWidthClasses[maxWidth]} transform overflow-hidden rounded-lg bg-gray-800 p-6 text-left align-middle shadow-xl transition-all`}
+              >
                 {title && (
                   <div className="flex items-center justify-between mb-4">
                     <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-white">

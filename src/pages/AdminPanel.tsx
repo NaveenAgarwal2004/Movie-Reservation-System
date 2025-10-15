@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { 
-  FilmIcon, 
-  BuildingOfficeIcon, 
-  UsersIcon, 
+import {
+  FilmIcon,
+  BuildingOfficeIcon,
+  UsersIcon,
   TicketIcon,
   ChartBarIcon,
   CogIcon,
   PlusIcon,
   EyeIcon,
   PencilIcon,
-  TrashIcon
+  TrashIcon,
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 
@@ -24,15 +24,15 @@ const AdminPanel = () => {
     { name: 'Theaters', href: '/admin/theaters', icon: BuildingOfficeIcon, id: 'theaters' },
     { name: 'Bookings', href: '/admin/bookings', icon: TicketIcon, id: 'bookings' },
     { name: 'Users', href: '/admin/users', icon: UsersIcon, id: 'users' },
-    { name: 'Settings', href: '/admin/settings', icon: CogIcon, id: 'settings' }
+    { name: 'Settings', href: '/admin/settings', icon: CogIcon, id: 'settings' },
   ];
 
   // Mock data for dashboard
   const stats = [
     { name: 'Total Movies', value: '24', change: '+2', changeType: 'increase' },
     { name: 'Active Theaters', value: '8', change: '+1', changeType: 'increase' },
-    { name: 'Today\'s Bookings', value: '156', change: '+12%', changeType: 'increase' },
-    { name: 'Total Revenue', value: '$12,450', change: '+8%', changeType: 'increase' }
+    { name: "Today's Bookings", value: '156', change: '+12%', changeType: 'increase' },
+    { name: 'Total Revenue', value: '$12,450', change: '+8%', changeType: 'increase' },
   ];
 
   const recentBookings = [
@@ -43,7 +43,7 @@ const AdminPanel = () => {
       theater: 'CineMax Downtown',
       amount: '$28.50',
       status: 'confirmed',
-      date: '2024-01-15'
+      date: '2024-01-15',
     },
     {
       id: 'BK-002',
@@ -52,7 +52,7 @@ const AdminPanel = () => {
       theater: 'CineMax Mall',
       amount: '$18.00',
       status: 'pending',
-      date: '2024-01-15'
+      date: '2024-01-15',
     },
     {
       id: 'BK-003',
@@ -61,17 +61,15 @@ const AdminPanel = () => {
       theater: 'CineMax IMAX',
       amount: '$25.00',
       status: 'confirmed',
-      date: '2024-01-14'
-    }
+      date: '2024-01-14',
+    },
   ];
 
   const Dashboard = () => (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
-        <div className="text-sm text-gray-400">
-          Last updated: {new Date().toLocaleString()}
-        </div>
+        <div className="text-sm text-gray-400">Last updated: {new Date().toLocaleString()}</div>
       </div>
 
       {/* Stats Grid */}
@@ -89,9 +87,11 @@ const AdminPanel = () => {
                 <p className="text-sm font-medium text-gray-400">{stat.name}</p>
                 <p className="text-2xl font-bold text-white">{stat.value}</p>
               </div>
-              <div className={`text-sm ${
-                stat.changeType === 'increase' ? 'text-green-400' : 'text-red-400'
-              }`}>
+              <div
+                className={`text-sm ${
+                  stat.changeType === 'increase' ? 'text-green-400' : 'text-red-400'
+                }`}
+              >
                 {stat.change}
               </div>
             </div>
@@ -137,12 +137,8 @@ const AdminPanel = () => {
             <tbody className="divide-y divide-gray-700">
               {recentBookings.map((booking) => (
                 <tr key={booking.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                    {booking.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                    {booking.user}
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{booking.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{booking.user}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
                     {booking.movie}
                   </td>
@@ -150,11 +146,13 @@ const AdminPanel = () => {
                     {booking.amount}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      booking.status === 'confirmed' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        booking.status === 'confirmed'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}
+                    >
                       {booking.status}
                     </span>
                   </td>
@@ -254,9 +252,10 @@ const AdminPanel = () => {
           <nav className="mt-6">
             {navigation.map((item) => {
               const Icon = item.icon;
-              const isActive = location.pathname === item.href || 
+              const isActive =
+                location.pathname === item.href ||
                 (item.href === '/admin' && location.pathname === '/admin');
-              
+
               return (
                 <Link
                   key={item.name}

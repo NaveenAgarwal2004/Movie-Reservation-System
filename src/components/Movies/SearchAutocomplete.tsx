@@ -83,7 +83,7 @@ const SearchAutocomplete: React.FC = () => {
   };
 
   const addToRecentSearches = (search: string) => {
-    const updated = [search, ...recentSearches.filter(s => s !== search)].slice(0, 5);
+    const updated = [search, ...recentSearches.filter((s) => s !== search)].slice(0, 5);
     setRecentSearches(updated);
     localStorage.setItem('recentSearches', JSON.stringify(updated));
   };
@@ -94,7 +94,7 @@ const SearchAutocomplete: React.FC = () => {
   };
 
   const removeRecentSearch = (search: string) => {
-    const updated = recentSearches.filter(s => s !== search);
+    const updated = recentSearches.filter((s) => s !== search);
     setRecentSearches(updated);
     localStorage.setItem('recentSearches', JSON.stringify(updated));
   };
@@ -163,9 +163,7 @@ const SearchAutocomplete: React.FC = () => {
                 ))}
               </div>
             ) : query.length >= 2 ? (
-              <div className="p-4 text-center text-gray-400">
-                No movies found
-              </div>
+              <div className="p-4 text-center text-gray-400">No movies found</div>
             ) : null}
 
             {query.length < 2 && recentSearches.length > 0 && (

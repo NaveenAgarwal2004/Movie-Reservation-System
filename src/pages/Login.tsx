@@ -8,28 +8,28 @@ import toast from 'react-hot-toast';
 const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const from = location.state?.from?.pathname || '/';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       await login(formData.email, formData.password);
       navigate(from, { replace: true });
@@ -49,12 +49,8 @@ const Login = () => {
           transition={{ duration: 0.5 }}
         >
           <div className="text-center">
-            <h2 className="mt-6 text-3xl font-extrabold text-white">
-              Sign in to your account
-            </h2>
-            <p className="mt-2 text-sm text-gray-400">
-              Welcome back! Please enter your details.
-            </p>
+            <h2 className="mt-6 text-3xl font-extrabold text-white">Sign in to your account</h2>
+            <p className="mt-2 text-sm text-gray-400">Welcome back! Please enter your details.</p>
           </div>
         </motion.div>
 
@@ -128,10 +124,7 @@ const Login = () => {
             </div>
 
             <div className="text-sm">
-              <Link
-                to="/forgot-password"
-                className="font-medium text-red-600 hover:text-red-500"
-              >
+              <Link to="/forgot-password" className="font-medium text-red-600 hover:text-red-500">
                 Forgot your password?
               </Link>
             </div>
@@ -157,10 +150,7 @@ const Login = () => {
           <div className="text-center">
             <p className="text-sm text-gray-400">
               Don't have an account?{' '}
-              <Link
-                to="/register"
-                className="font-medium text-red-600 hover:text-red-500"
-              >
+              <Link to="/register" className="font-medium text-red-600 hover:text-red-500">
                 Sign up
               </Link>
             </p>
@@ -176,8 +166,12 @@ const Login = () => {
         >
           <h3 className="text-sm font-medium text-gray-300 mb-2">Demo Credentials:</h3>
           <div className="text-sm text-gray-400 space-y-1">
-            <p><strong>User:</strong> user@example.com / password123</p>
-            <p><strong>Admin:</strong> admin@example.com / admin123</p>
+            <p>
+              <strong>User:</strong> user@example.com / password123
+            </p>
+            <p>
+              <strong>Admin:</strong> admin@example.com / admin123
+            </p>
           </div>
         </motion.div>
       </div>

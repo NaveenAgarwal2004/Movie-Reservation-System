@@ -25,7 +25,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
 
   useEffect(() => {
     let observer: IntersectionObserver;
-    
+
     if (imgRef.current) {
       observer = new IntersectionObserver(
         (entries) => {
@@ -54,13 +54,13 @@ const LazyImage: React.FC<LazyImageProps> = ({
   const loadImage = () => {
     const img = new Image();
     img.src = src;
-    
+
     img.onload = () => {
       setImageSrc(src);
       setIsLoading(false);
       onLoad?.();
     };
-    
+
     img.onerror = () => {
       setIsError(true);
       setIsLoading(false);
@@ -79,13 +79,13 @@ const LazyImage: React.FC<LazyImageProps> = ({
         animate={{ opacity: isLoading ? 0.6 : 1 }}
         transition={{ duration: 0.3 }}
       />
-      
+
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
         </div>
       )}
-      
+
       {isError && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">
           Failed to load image

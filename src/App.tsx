@@ -6,10 +6,19 @@ import { SocketProvider } from './contexts/SocketContext';
 import ErrorBoundary from './components/Common/ErrorBoundary';
 import Navbar from './components/Layout/Navbar';
 import Footer from './components/Layout/Footer';
-import Home from './pages/HomeWithTMDB';
+
+// OMDb-powered pages (works in India without VPN)
+import HomeOMDb from './pages/HomeOMDb';
+import MoviesOMDb from './pages/MoviesOMDb';
+import MovieDetailsOMDb from './pages/MovieDetailsOMDb';
+
+// TMDB-powered pages (backup - requires VPN in India)
+import HomeWithTMDB from './pages/HomeWithTMDB';
 import Movies from './pages/MoviesWithTMDB';
-import InstallPrompt from './components/PWA/InstallPrompt';
 import MovieDetails from './pages/MovieDetailsWithTMDB';
+
+// Other pages
+import InstallPrompt from './components/PWA/InstallPrompt';
 import SeatSelection from './pages/SeatSelection';
 import Checkout from './pages/Checkout';
 import BookingConfirmation from './pages/BookingConfirmation';
@@ -20,6 +29,8 @@ import Dashboard from './pages/Dashboard';
 import AdminPanel from './pages/AdminPanel';
 import Theaters from './pages/Theaters';
 import Contact from './pages/Contact';
+import Watchlist from './pages/Watchlist';
+import LoyaltyProgram from './pages/LoyaltyProgram';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import './App.css';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -34,13 +45,15 @@ const queryClient = new QueryClient({
       refetchOnReconnect: true,
     },
     mutations: {
-      // Retry failed mutations once
       retry: 1,
     },
   },
 });
 
 function App() {
+  // Check if user prefers TMDB (can be toggled in settings)
+  const useTMDB = localStorage.getItem('api-provider') === 'tmdb';
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
@@ -51,15 +64,29 @@ function App() {
                 <Navbar />
                 <main className="pt-16">
                   <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/movies" element={<Movies />} />
-                    <Route path="/movies/:id" element={<MovieDetails />} />
+                    {/* OMDb Routes (Default - Works in India) */}
+                    <Route path="/" element={useTMDB ? <HomeWithTMDB /> : <HomeOMDb />} />
+                    <Route path="/movies" element={useTMDB ? <Movies /> : <MoviesOMDb />} />
+                    <Route
+                      path="/movies/:id"
+                      element={useTMDB ? <MovieDetails /> : <MovieDetailsOMDb />}
+                    />
+
+                    {/* Alternative routes for explicit API selection */}
+                    <Route path="/movies-omdb" element={<MoviesOMDb />} />
+                    <Route path="/movies-omdb/:id" element={<MovieDetailsOMDb />} />
+                    <Route path="/movies-tmdb" element={<Movies />} />
+                    <Route path="/movies-tmdb/:id" element={<MovieDetails />} />
+
+                    {/* Auth Routes */}
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
 
+                    {/* Public Routes */}
                     <Route path="/theaters" element={<Theaters />} />
                     <Route path="/contact" element={<Contact />} />
 
+                    {/* Protected Routes */}
                     <Route
                       path="/seat-selection/:showtimeId"
                       element={
@@ -100,7 +127,24 @@ function App() {
                         </ProtectedRoute>
                       }
                     />
+                    <Route
+                      path="/watchlist"
+                      element={
+                        <ProtectedRoute>
+                          <Watchlist />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/loyalty"
+                      element={
+                        <ProtectedRoute>
+                          <LoyaltyProgram />
+                        </ProtectedRoute>
+                      }
+                    />
 
+                    {/* Admin Routes */}
                     <Route
                       path="/admin/*"
                       element={

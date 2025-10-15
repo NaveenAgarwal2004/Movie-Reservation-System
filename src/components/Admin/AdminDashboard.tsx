@@ -1,28 +1,28 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  FilmIcon, 
-  BuildingOfficeIcon, 
-  UsersIcon, 
+import {
+  FilmIcon,
+  BuildingOfficeIcon,
+  UsersIcon,
   TicketIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
-  CurrencyDollarIcon
+  CurrencyDollarIcon,
 } from '@heroicons/react/24/outline';
-import { 
-  LineChart, 
-  Line, 
-  BarChart, 
-  Bar, 
-  PieChart, 
-  Pie, 
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
   Cell,
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer 
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
 } from 'recharts';
 import { useDashboardStats, useRecentBookings } from '../../hooks/useAdmin';
 import LoadingSkeleton from '../UI/LoadingSkeleton';
@@ -30,7 +30,11 @@ import ErrorMessage from '../UI/ErrorMessage';
 
 const AdminDashboard = () => {
   const { data: stats, isLoading: statsLoading, error: statsError } = useDashboardStats();
-  const { data: recentBookings, isLoading: bookingsLoading, error: bookingsError } = useRecentBookings();
+  const {
+    data: recentBookings,
+    isLoading: bookingsLoading,
+    error: bookingsError,
+  } = useRecentBookings();
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('week');
 
   // Mock data for charts
@@ -41,7 +45,7 @@ const AdminDashboard = () => {
     { name: 'Thu', revenue: 2200, bookings: 78 },
     { name: 'Fri', revenue: 3100, bookings: 105 },
     { name: 'Sat', revenue: 3800, bookings: 128 },
-    { name: 'Sun', revenue: 3400, bookings: 115 }
+    { name: 'Sun', revenue: 3400, bookings: 115 },
   ];
 
   const genreData = [
@@ -49,7 +53,7 @@ const AdminDashboard = () => {
     { name: 'Drama', value: 25, color: '#3B82F6' },
     { name: 'Comedy', value: 20, color: '#10B981' },
     { name: 'Sci-Fi', value: 15, color: '#8B5CF6' },
-    { name: 'Horror', value: 5, color: '#F59E0B' }
+    { name: 'Horror', value: 5, color: '#F59E0B' },
   ];
 
   const moviePerformance = [
@@ -57,14 +61,14 @@ const AdminDashboard = () => {
     { name: 'Inception', bookings: 198, revenue: 2970 },
     { name: 'Interstellar', bookings: 167, revenue: 2505 },
     { name: 'Avatar', bookings: 156, revenue: 2340 },
-    { name: 'Spider-Man', bookings: 134, revenue: 2010 }
+    { name: 'Spider-Man', bookings: 134, revenue: 2010 },
   ];
 
   const theaterOccupancy = [
     { name: 'Downtown', occupancy: 85 },
     { name: 'Mall', occupancy: 78 },
     { name: 'IMAX', occupancy: 92 },
-    { name: 'Uptown', occupancy: 65 }
+    { name: 'Uptown', occupancy: 65 },
   ];
 
   if (statsLoading || bookingsLoading) {
@@ -77,59 +81,59 @@ const AdminDashboard = () => {
 
   if (statsError || bookingsError) {
     return (
-      <ErrorMessage 
-        message="Failed to load dashboard data" 
-        onRetry={() => window.location.reload()} 
+      <ErrorMessage
+        message="Failed to load dashboard data"
+        onRetry={() => window.location.reload()}
       />
     );
   }
 
   const statCards = [
-    { 
-      name: 'Total Revenue', 
-      value: `$${stats?.totalRevenue?.toFixed(2) || '0.00'}`, 
-      icon: CurrencyDollarIcon, 
+    {
+      name: 'Total Revenue',
+      value: `$${stats?.totalRevenue?.toFixed(2) || '0.00'}`,
+      icon: CurrencyDollarIcon,
       change: '+12.5%',
       trend: 'up',
       color: 'text-green-500',
-      bgColor: 'bg-green-500/10'
+      bgColor: 'bg-green-500/10',
     },
-    { 
-      name: 'Total Movies', 
-      value: stats?.totalMovies || 0, 
-      icon: FilmIcon, 
+    {
+      name: 'Total Movies',
+      value: stats?.totalMovies || 0,
+      icon: FilmIcon,
       change: '+2',
       trend: 'up',
       color: 'text-blue-500',
-      bgColor: 'bg-blue-500/10'
+      bgColor: 'bg-blue-500/10',
     },
-    { 
-      name: 'Active Theaters', 
-      value: stats?.totalTheaters || 0, 
-      icon: BuildingOfficeIcon, 
+    {
+      name: 'Active Theaters',
+      value: stats?.totalTheaters || 0,
+      icon: BuildingOfficeIcon,
       change: '+1',
       trend: 'up',
       color: 'text-purple-500',
-      bgColor: 'bg-purple-500/10'
+      bgColor: 'bg-purple-500/10',
     },
-    { 
-      name: 'Total Users', 
-      value: stats?.totalUsers || 0, 
-      icon: UsersIcon, 
+    {
+      name: 'Total Users',
+      value: stats?.totalUsers || 0,
+      icon: UsersIcon,
       change: '+15.3%',
       trend: 'up',
       color: 'text-yellow-500',
-      bgColor: 'bg-yellow-500/10'
+      bgColor: 'bg-yellow-500/10',
     },
-    { 
-      name: 'Today\'s Bookings', 
-      value: stats?.todayBookings || 0, 
-      icon: TicketIcon, 
+    {
+      name: "Today's Bookings",
+      value: stats?.todayBookings || 0,
+      icon: TicketIcon,
       change: '+8.2%',
       trend: 'up',
       color: 'text-red-500',
-      bgColor: 'bg-red-500/10'
-    }
+      bgColor: 'bg-red-500/10',
+    },
   ];
 
   return (
@@ -157,7 +161,7 @@ const AdminDashboard = () => {
         {statCards.map((stat, index) => {
           const Icon = stat.icon;
           const TrendIcon = stat.trend === 'up' ? ArrowTrendingUpIcon : ArrowTrendingDownIcon;
-          
+
           return (
             <motion.div
               key={stat.name}
@@ -170,7 +174,9 @@ const AdminDashboard = () => {
                 <div className={`p-3 rounded-lg ${stat.bgColor}`}>
                   <Icon className={`h-6 w-6 ${stat.color}`} />
                 </div>
-                <div className={`flex items-center text-xs font-medium ${stat.trend === 'up' ? 'text-green-400' : 'text-red-400'}`}>
+                <div
+                  className={`flex items-center text-xs font-medium ${stat.trend === 'up' ? 'text-green-400' : 'text-red-400'}`}
+                >
                   <TrendIcon className="h-4 w-4 mr-1" />
                   {stat.change}
                 </div>
@@ -197,26 +203,26 @@ const AdminDashboard = () => {
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis dataKey="name" stroke="#9CA3AF" />
               <YAxis stroke="#9CA3AF" />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#1F2937', 
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#1F2937',
                   border: '1px solid #374151',
                   borderRadius: '8px',
-                  color: '#fff'
-                }} 
+                  color: '#fff',
+                }}
               />
               <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="revenue" 
-                stroke="#EF4444" 
+              <Line
+                type="monotone"
+                dataKey="revenue"
+                stroke="#EF4444"
                 strokeWidth={2}
                 name="Revenue ($)"
               />
-              <Line 
-                type="monotone" 
-                dataKey="bookings" 
-                stroke="#3B82F6" 
+              <Line
+                type="monotone"
+                dataKey="bookings"
+                stroke="#3B82F6"
                 strokeWidth={2}
                 name="Bookings"
               />
@@ -248,13 +254,13 @@ const AdminDashboard = () => {
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#1F2937', 
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#1F2937',
                   border: '1px solid #374151',
                   borderRadius: '8px',
-                  color: '#fff'
-                }} 
+                  color: '#fff',
+                }}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -276,13 +282,13 @@ const AdminDashboard = () => {
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis type="number" stroke="#9CA3AF" />
               <YAxis dataKey="name" type="category" stroke="#9CA3AF" width={120} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#1F2937', 
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#1F2937',
                   border: '1px solid #374151',
                   borderRadius: '8px',
-                  color: '#fff'
-                }} 
+                  color: '#fff',
+                }}
               />
               <Bar dataKey="bookings" fill="#EF4444" radius={[0, 8, 8, 0]} />
             </BarChart>
@@ -307,8 +313,11 @@ const AdminDashboard = () => {
                 <div className="w-full bg-gray-700 rounded-full h-3">
                   <motion.div
                     className={`h-3 rounded-full ${
-                      theater.occupancy >= 80 ? 'bg-green-500' :
-                      theater.occupancy >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                      theater.occupancy >= 80
+                        ? 'bg-green-500'
+                        : theater.occupancy >= 60
+                          ? 'bg-yellow-500'
+                          : 'bg-red-500'
                     }`}
                     initial={{ width: 0 }}
                     animate={{ width: `${theater.occupancy}%` }}
@@ -334,7 +343,7 @@ const AdminDashboard = () => {
             View All →
           </button>
         </div>
-        
+
         {recentBookings && recentBookings.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-700">
@@ -376,13 +385,15 @@ const AdminDashboard = () => {
                       ${booking.totalAmount}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        booking.status === 'confirmed' 
-                          ? 'bg-green-100 text-green-800' 
-                          : booking.status === 'pending'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          booking.status === 'confirmed'
+                            ? 'bg-green-100 text-green-800'
+                            : booking.status === 'pending'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-red-100 text-red-800'
+                        }`}
+                      >
                         {booking.status}
                       </span>
                     </td>

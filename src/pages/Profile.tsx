@@ -25,7 +25,7 @@ const Profile: React.FC = () => {
               {/* Personal Information */}
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold text-white mb-4">Personal Information</h2>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3 p-4 bg-gray-700 rounded-lg">
                     <User className="h-5 w-5 text-blue-400" />
@@ -34,7 +34,7 @@ const Profile: React.FC = () => {
                       <p className="text-white font-medium">John Doe</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3 p-4 bg-gray-700 rounded-lg">
                     <Mail className="h-5 w-5 text-blue-400" />
                     <div>
@@ -42,7 +42,7 @@ const Profile: React.FC = () => {
                       <p className="text-white font-medium">john.doe@example.com</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3 p-4 bg-gray-700 rounded-lg">
                     <Calendar className="h-5 w-5 text-blue-400" />
                     <div>
@@ -60,7 +60,7 @@ const Profile: React.FC = () => {
               {/* Booking History */}
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold text-white mb-4">Recent Bookings</h2>
-                
+
                 <div className="space-y-4">
                   <div className="p-4 bg-gray-700 rounded-lg">
                     <div className="flex items-start justify-between">
@@ -77,7 +77,7 @@ const Profile: React.FC = () => {
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="p-4 bg-gray-700 rounded-lg">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-3">
@@ -93,7 +93,7 @@ const Profile: React.FC = () => {
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="p-4 bg-gray-700 rounded-lg">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-3">

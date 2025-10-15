@@ -15,11 +15,36 @@ const ShareButton: React.FC<ShareButtonProps> = ({ title, text, url, className =
   const [showModal, setShowModal] = useState(false);
 
   const shareOptions = [
-    { name: 'Facebook', icon: '📘', color: 'bg-blue-600', action: () => shareOnSocial.facebook({ title, text, url }) },
-    { name: 'Twitter', icon: '🐦', color: 'bg-sky-500', action: () => shareOnSocial.twitter({ title, text, url }) },
-    { name: 'WhatsApp', icon: '💬', color: 'bg-green-600', action: () => shareOnSocial.whatsapp({ title, text, url }) },
-    { name: 'Telegram', icon: '✈️', color: 'bg-blue-500', action: () => shareOnSocial.telegram({ title, text, url }) },
-    { name: 'Email', icon: '📧', color: 'bg-gray-600', action: () => shareOnSocial.email({ title, text, url }) },
+    {
+      name: 'Facebook',
+      icon: '📘',
+      color: 'bg-blue-600',
+      action: () => shareOnSocial.facebook({ title, text, url }),
+    },
+    {
+      name: 'Twitter',
+      icon: '🐦',
+      color: 'bg-sky-500',
+      action: () => shareOnSocial.twitter({ title, text, url }),
+    },
+    {
+      name: 'WhatsApp',
+      icon: '💬',
+      color: 'bg-green-600',
+      action: () => shareOnSocial.whatsapp({ title, text, url }),
+    },
+    {
+      name: 'Telegram',
+      icon: '✈️',
+      color: 'bg-blue-500',
+      action: () => shareOnSocial.telegram({ title, text, url }),
+    },
+    {
+      name: 'Email',
+      icon: '📧',
+      color: 'bg-gray-600',
+      action: () => shareOnSocial.email({ title, text, url }),
+    },
   ];
 
   const handleCopyLink = async () => {
@@ -86,7 +111,9 @@ const ShareButton: React.FC<ShareButtonProps> = ({ title, text, url, className =
                     }}
                     className="flex flex-col items-center space-y-2 p-4 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors"
                   >
-                    <div className={`w-12 h-12 rounded-full ${option.color} flex items-center justify-center text-2xl`}>
+                    <div
+                      className={`w-12 h-12 rounded-full ${option.color} flex items-center justify-center text-2xl`}
+                    >
                       {option.icon}
                     </div>
                     <span className="text-white text-sm">{option.name}</span>
