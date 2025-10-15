@@ -7,8 +7,8 @@ import authMiddleware from '../middleware/auth.js';
 const router = express.Router();
 
 // OMDB and TMDB configuration
-const OMDB_API_KEY = import.meta.env.OMDB_API_KEY;
-const TMDB_API_KEY = import.meta.env.TMDB_API_KEY;
+const OMDB_API_KEY = import.meta.env.OMDB_API_KEY || '';
+const TMDB_API_KEY = import.meta.env.TMDB_API_KEY || '';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
 // Helper function to fetch movie data from OMDB with TMDB fallback
